@@ -1,6 +1,5 @@
 const {User} = require('../model/user');
 const axios = require('axios');
-const env = require("dotenv").config();
 const Hubspot = require('hubspot');
 const {getExpiry} = require('../common-middleware');
 const {getProjectById, getReportsByProjectId} = require('./sumoquote');
@@ -8,7 +7,7 @@ const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
     console.log("Hubspot Auth connect start")
-    return res.redirect(301,process.env.HUBSPOT_COONETION_URL);
+    return res.redirect(301, process.env.HUBSPOT_COONETION_URL);
     console.log("Hubspot Auth connect end")
 }
 
@@ -42,17 +41,18 @@ exports.callback = async (req, res) => {
                 tokenStore.updated_at = new Date();
                 hubspot.setAccessToken((tokenStore.access_token));
                 userId = findUser._id;
+            } else {
+                const user = new User({
+                    user: userInfo.data.user,
+                    hubspotUserId: userInfo.data.user_id,
+                    hubspotPortalId: userInfo.data.hub_id,
+                    hubspotRefreshToken: tokenStore.refresh_token,
+                    hubspotAccessToken: tokenStore.access_token,
+                    hubspotTokenExpiry: getExpiry(tokenStore.expires_in)
+                })
+                await user.save();
+                userId = user._id;
             }
-            const user = new User({
-                user: userInfo.data.user,
-                hubspotUserId: userInfo.data.user_id,
-                hubspotPortalId: userInfo.data.hub_id,
-                hubspotRefreshToken: tokenStore.refresh_token,
-                hubspotAccessToken: tokenStore.access_token,
-                hubspotTokenExpiry: getExpiry(tokenStore.expires_in)
-            })
-            await user.save();
-            userId = user._id;
             console.log("Hubspot Auth callback end")
             return res.redirect('/sumoquote/connect?id=' + userId);
         } else {

@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require("path");
-const env = require("dotenv").config();
+require("dotenv").config();
 require('./db/index')();
 const PORT = process.env.PORT || 4050;
 

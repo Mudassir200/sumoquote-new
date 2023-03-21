@@ -1,6 +1,5 @@
 const axios = require('axios');
 const {getExpiry} = require('../common-middleware');
-const env = require("dotenv").config();
 const {User} = require('../model/user');
 const mongoose = require('mongoose');
 
