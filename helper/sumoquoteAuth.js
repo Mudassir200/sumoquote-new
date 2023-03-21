@@ -49,3 +49,17 @@ exports.refreshSumoquoteAccessToken = async (user) => {
         return res.status(400).json({from: '(helper/sumoquoteAuth/refreshSumoquoteAccessToken) Helper Function Error :- ', message: error.message});
     }
 }
+
+
+exports.sumoApiKeyHeader = async (token,mode,type) => {
+    if (mode !== "production") {
+        return {
+            'sq-api-key': `${token}`,
+            'Content-Type': type
+        }
+    } 
+    return {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': type
+    }
+}

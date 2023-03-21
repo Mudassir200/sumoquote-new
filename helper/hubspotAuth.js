@@ -44,3 +44,25 @@ exports.refreshHubspotAccessToken = async (user) => {
         return {from: '(helper/hubspotAuth/refreshHubspotAccessToken) Helper Function Error :- ', message: error.message};
     }
 }
+
+
+exports.getHubspotObjectData = async (id, object, token,properties="?") => {
+    try {
+        console.log("Hubspot get object data start")
+        console.log("Hubspot Object:- " + object + "and ObjectId :- " + id)
+        const config = {
+            method: 'get',
+            url: 'https://api.hubapi.com/crm/v3/objects/' + object + '/' + id + properties,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+
+        const data = await axios(config);
+        console.log("Hubspot get object data end")
+        return data;
+    } catch (error) {
+        return {from: '(helper/hubspotAuth/getHubspotObjectData) Function Error :- ', message: error.message};
+    }
+}

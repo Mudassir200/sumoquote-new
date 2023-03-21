@@ -2,6 +2,8 @@ const axios = require('axios');
 const {getExpiry} = require('../common-middleware');
 const {User} = require('../model/user');
 const mongoose = require('mongoose');
+const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
+const { getHubspotObjectData } = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -162,12 +164,12 @@ exports.responseWebhook = async (req, res) => {
     try {
         console.log("sumoquote webhook response start")
         let sumoquoteWebhookId = req.params.sumoquoteWebhookId;
-        console.log("Response from webhook Id :- "+ sumoquoteWebhookId)
+        console.log("Response from webhook Id :- " + sumoquoteWebhookId)
         console.log("Response from webhook :- ", req.body)
         let projectId = req.body.ProjectId;
         let SignatureDate = req.body.SignatureDate;
         let SentForSignatureOn = req.body.SentForSignatureOn;
-        const user = await User.findOne({ sumoquoteWebhookId });
+        const user = await User.findOne({sumoquoteWebhookId});
 
         const data = await getProjectById(projectId, sumoToken);
         if (data ?. message !== undefined || data ?. message) {
@@ -180,19 +182,20 @@ exports.responseWebhook = async (req, res) => {
     }
 }
 
-exports.getProjectById = async (id, sumoToken) => {
+exports.getProjectById = async (id, sumoToken, mode = "production") => {
     try {
         console.log("sumoquote get project by id start")
+        let headers = await sumoApiKeyHeader(sumoToken, mode, 'application/json');
+
         const config = {
             method: 'get',
-            url: `https://api.sumoquote.com/v1/Project/${id}`,
-            headers: {
-                Authorization: `Bearer ${sumoToken}`,
-                'Content-Type': 'application/json'
-            }
+            url: `https://api.sumoquote.com/v1/Project?q=${id}`,
+            headers
         };
 
+        console.log(config);
         const {data} = await axios(config);
+        console.log(data)
         console.log("sumoquote get project by id end")
         return data;
     } catch (error) {
@@ -217,5 +220,24 @@ exports.getReportsByProjectId = async (id, sumoToken) => {
         return reports;
     } catch (error) {
         return {from: '(controller/sumoquote/getReportsByProjectId) Function Error :- ', message: error.message};
+    }
+}
+
+exports.createProjectByObjectId = async (req, res) => {
+    try {
+        console.log("sumoquote create project by hubspot object id start")
+        const user = req.user;
+        if(req.query.deal){
+            console.log(req.query);
+            let properties = "?properties=amount,closedate,createdate,dealname,hs_object_id,hs_lastmodifieddate,pipeline,state,zip_code,city"
+            let objectData = await getHubspotObjectData(req.query.deal,'deal',user.hubspotAccessToken,properties);
+            console.log(objectData);
+        }else{
+            res.send('Deal Id Not found');
+        }        
+        console.log("sumoquote create project by hubspot object id end")
+        return res.status(200).json({message: "Valid url"});
+    } catch (error) {
+        return {from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error.message};
     }
 }

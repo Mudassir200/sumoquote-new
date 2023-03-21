@@ -7,7 +7,9 @@ const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
     console.log("Hubspot Auth connect start");
-    return res.redirect(301, process.env.HUBSPOT_COONETION_URL);
+    res.render('pages/connecthubspot', {
+        url:process.env.HUBSPOT_COONETION_URL
+    });
 }
 
 exports.callback = async (req, res) => {
@@ -68,10 +70,11 @@ exports.crmCardReport = async (req, res) => {
         console.log("Hubspot Crm Card Report start")
         console.log("Hubspot User:- " + req.user.user + "and portalID :- " + req.user.hubspotPortalId)
 
-        const sumoToken = req.user.sumoquoteAccessToken;
+        const sumoToken = req.user.sumoquoteAccessToken || req.user.sumoquoteAPIKEY;
+        console.log(sumoToken);
         const associatedObjectId = req.query.associatedObjectId;
 
-        const data = await getProjectById(associatedObjectId, sumoToken);
+        const data = await getProjectById(associatedObjectId, sumoToken,'development');
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
         }
@@ -191,7 +194,7 @@ exports.crmCardReport = async (req, res) => {
                     "type": "IFRAME",
                     "width": 1000,
                     "height": 850,
-                    "uri": HOST + '/sumoquote/create-deal?deal=' + associatedObjectId + 'portal=' + req.user.hubspotPortalId + 'userId=' + req.user._id,
+                    "uri": HOST + '/sumoquote/create-project?deal=' + associatedObjectId + '&portalId=' + req.user.hubspotPortalId + '&userId=' + req.user._id,
                     "label": "Create Project"
                 },
                 "secondaryAction": []
@@ -201,28 +204,6 @@ exports.crmCardReport = async (req, res) => {
         return res.status(400).json({from: '(controller/hubspot/crmCardReport) Function Error :- ', message: error.message});
     }
 }
-
-exports.getObjectData = async (id, object, token) => {
-    try {
-        console.log("Hubspot get object data start")
-        console.log("Hubspot Object:- " + object + "and ObjectId :- " + id)
-        const config = {
-            method: 'get',
-            url: 'https://api.hubapi.com/crm/v3/objects/' + object + '/' + id,
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        };
-
-        const {data} = await axios(config);
-        console.log("Hubspot get object data end")
-        return data;
-    } catch (error) {
-        return {from: '(controller/hubspot/getObjectData) Function Error :- ', message: error.message};
-    }
-}
-
 
 exports.findDate = async (data) => {
     if (!data.value || isNaN(new Date(data.value).getDate())) {

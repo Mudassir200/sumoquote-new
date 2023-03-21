@@ -11,12 +11,12 @@ exports.requireConnectCrmCard = async (req, res, next) => {
                         "width": 1000,
                         "height": 850,
                         "uri": process.env.HOST + '/hubspot/connect',
-                        "label": "ReConnect Hubspot"
+                        "label": "Re-Connect Hubspot"
                     },
                     "secondaryAction": []
                 })
             }
-            if (! user.sumoquoteRefreshToken) {
+            if (! user.sumoquoteRefreshToken && ! user.sumoquoteAPIKEY) {
                 return res.json({
                     "primaryAction": {
                         "type": "IFRAME",
@@ -35,6 +35,28 @@ exports.requireConnectCrmCard = async (req, res, next) => {
         }
     } catch (error) {
         return res.status(400).json({from: '(common-middelware/index/requireConnect) function Error :- ', message: error.message});
+    }
+}
+
+exports.requiredAuth = async (req, res, next) => {
+    try {
+        if (req.query.portalId) {
+            const user = await User.findOne({hubspotPortalId: req.query.portalId})
+            if (! user || ! user.hubspotPortalId || ! user.hubspotRefreshToken) {
+                console.log("Hubspot Not Connected");
+                return res.redirect('/hubspot/connect');
+            }
+            if (! user.sumoquoteRefreshToken && ! user.sumoquoteAPIKEY) {
+                console.log("Sumoquote Not Connected");
+                return res.redirect('/sumoquote/connect?id=' + user.hubspotUserId);
+            }
+            req.user = user;
+            next();
+        } else {
+            return res.status(400).json({message: "Hubspot PortalId required!"});
+        }
+    } catch (error) {
+        return res.status(400).json({from: '(common-middelware/index/requiredAuth) function Error :- ', message: error.message});
     }
 }
 
