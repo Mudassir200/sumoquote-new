@@ -1,5 +1,6 @@
 const {User} = require('../model/user');
 const axios = require('axios');
+const env = require("dotenv").config();
 const Hubspot = require('hubspot');
 const {getExpiry} = require('../common-middleware');
 const {getProjectById, getReportsByProjectId} = require('./sumoquote');
