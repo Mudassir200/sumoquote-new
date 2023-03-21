@@ -7,7 +7,7 @@ const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
     console.log("Hubspot Auth connect start")
-    return res.redirect(process.env.HUBSPOT_COONETION_URL);
+    return res.redirect('/'+process.env.HUBSPOT_COONETION_URL);
     console.log("Hubspot Auth connect end")
 }
 
