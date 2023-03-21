@@ -186,16 +186,12 @@ exports.getProjectById = async (id, sumoToken, mode = "production") => {
     try {
         console.log("sumoquote get project by id start")
         let headers = await sumoApiKeyHeader(sumoToken, mode, 'application/json');
-
         const config = {
             method: 'get',
             url: `https://api.sumoquote.com/v1/Project?q=${id}`,
             headers
         };
-
-        console.log(config);
         const {data} = await axios(config);
-        console.log(data)
         console.log("sumoquote get project by id end")
         return data;
     } catch (error) {
