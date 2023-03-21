@@ -49,7 +49,7 @@ exports.callback = async (req, res) => {
                 hubspotPortalId: userInfo.data.hub_id,
                 hubspotRefreshToken: tokenStore.refresh_token,
                 hubspotAccessToken: tokenStore.access_token,
-                hubspotTokenExpiry: expiryTime
+                hubspotTokenExpiry: getExpiry(tokenStore.expires_in)
             })
             await user.save();
             userId = user._id;
