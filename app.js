@@ -20,8 +20,13 @@ app.use("/sumoquote", sumoQuoteRoutes);
 app.use('/documentation', async (req, res) => {
   res.render('pages/documentation');
 });
+
 app.use('/terms-and-conditions', async (req, res) => {
   res.render('pages/terms-and-conditions');
+});
+
+app.use('/', async (req, res) => {
+  res.render('pages/documentation');
 });
 
 app.use('/public', express.static(path.join(__dirname, 'public')))

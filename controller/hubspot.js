@@ -6,9 +6,8 @@ const {getProjectById, getReportsByProjectId} = require('./sumoquote');
 const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
-    console.log("Hubspot Auth connect start")
+    console.log("Hubspot Auth connect start");
     return res.redirect(301, process.env.HUBSPOT_COONETION_URL);
-    console.log("Hubspot Auth connect end")
 }
 
 exports.callback = async (req, res) => {
@@ -52,11 +51,12 @@ exports.callback = async (req, res) => {
                 })
                 await user.save();
                 userId = user._id;
+                console.log("Create New user .."+userId);
             }
-            console.log("Hubspot Auth callback end")
+            console.log("Hubspot Auth callback end");
             return res.redirect('/sumoquote/connect?id=' + userId);
         } else {
-            console.log('Wrong:- Hubspot Code Not Found!')
+            console.log('Wrong:- Hubspot Code Not Found!');
         }
     } catch (error) {
         return res.status(400).json({from: '(controller/hubspot/callback) Function Error :- ', message: error.message});
