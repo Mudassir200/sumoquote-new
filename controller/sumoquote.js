@@ -1,9 +1,9 @@
 const axios = require('axios');
-const {getExpiry} = require('../common-middleware');
+const {getExpiry, checkPropertyObj} = require('../common-middleware');
 const {User} = require('../model/user');
 const mongoose = require('mongoose');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
-const { getHubspotObjectData } = require('../helper/hubspotAuth');
+const {getHubspotObjectData} = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -50,7 +50,7 @@ exports.callback = async (req, res) => {
                 data: data
             };
             const {data: response} = await axios(config)
-            const expiryTime = getExpiry(response.expires_in);
+            const expiryTime = await getExpiry(response.expires_in);
 
             user.sumoquoteAccessToken = response.access_token;
             user.sumoquoteTokenExpiry = expiryTime;
@@ -199,16 +199,13 @@ exports.getProjectById = async (id, sumoToken, mode = "production") => {
     }
 }
 
-exports.getReportsByProjectId = async (id, sumoToken) => {
+exports.getReportsByProjectId = async (id, sumoToken,mode = "production") => {
     try {
         console.log("sumoquote get report by project id start")
         const config = {
             method: 'get',
             url: 'https://api.sumoquote.com/v1/Project/' + id + '/report',
-            headers: {
-                Authorization: `Bearer ${sumoToken}`,
-                'Content-Type': 'application/json'
-            }
+            headers: await sumoApiKeyHeader(sumoToken, mode, 'application/json'),
         };
 
         const {data: reports} = await axios(config);
@@ -223,14 +220,70 @@ exports.createProjectByObjectId = async (req, res) => {
     try {
         console.log("sumoquote create project by hubspot object id start")
         const user = req.user;
-        if(req.query.deal){
-            console.log(req.query);
-            let properties = "?properties=amount,closedate,createdate,dealname,hs_object_id,hs_lastmodifieddate,pipeline,state,zip_code,city"
-            let objectData = await getHubspotObjectData(req.query.deal,'deal',user.hubspotAccessToken,properties);
-            console.log(objectData);
-        }else{
+        if (req.query.deal) {
+            let properties = "?properties=dealname,hs_object_id,companycam_project_id,customer_first_name,customer_last_name,email,phone_number,address_line_1,address_line_2,state,zip_code,city"
+            let objectData = await getHubspotObjectData(req.query.deal, 'deal', user.hubspotAccessToken, properties);
+            if (objectData.id) {
+                let newSumoUpdate = {};
+                let objectProperties = objectData.properties;
+                newSumoUpdate["projectId"] = objectData.id;
+                newSumoUpdate["PortalId"] = user.hubspotPortalId;
+
+                if (checkPropertyObj(objectProperties, 'customer_first_name')) 
+                    newSumoUpdate["customerFirstName"] = objectProperties.customer_first_name;
+                 else 
+                    newSumoUpdate["customerFirstName"] = "No first name";
+                
+                if (checkPropertyObj(objectProperties, 'address_line_1')) 
+                    newSumoUpdate["addressLine1"] = objectProperties.address_line_1;
+                 else 
+                    newSumoUpdate["addressLine1"] = "Unknown";
+                
+                if (checkPropertyObj(objectProperties, 'customer_last_name')) 
+                    newSumoUpdate["customerLastName"] = objectProperties.customer_last_name;
+                
+                if (checkPropertyObj(objectProperties, 'phone_number')) 
+                    newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
+                
+                if (checkPropertyObj(objectProperties, 'email')) 
+                    newSumoUpdate["emailAddress"] = objectProperties.email;
+                
+                if (checkPropertyObj(objectProperties, 'state')) 
+                    newSumoUpdate["province"] = objectProperties.state;
+                
+                if (checkPropertyObj(objectProperties, 'zip_code')) 
+                    newSumoUpdate["postalCode"] = objectProperties.zip_code;
+                
+                if (checkPropertyObj(objectProperties, 'city')) 
+                    newSumoUpdate["city"] = objectProperties.city;
+                
+                if (checkPropertyObj(objectProperties, 'address_line_2')) 
+                    newSumoUpdate["addressLine2"] = objectProperties.address_line_2;
+                
+                if (checkPropertyObj(objectProperties, 'companycam_project_id')) {
+                    let projectIntegration = {
+                        'companyCamProjectId' : objectProperties.companycam_project_id
+                    };
+                    newSumoUpdate["projectIntegration"] = projectIntegration;
+                }                    
+                
+                console.log(newSumoUpdate);
+
+                const config = {
+                    method: 'post',
+                    url: 'https://api.sumoquote.com/v1/Project/',
+                    headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json'),
+                    data: newSumoUpdate
+                };
+
+                let result = await axios(config);
+                console.log("Project create response :- ", result);
+            } else {
+                res.send('Deal Data Not get from api please re-create project');
+            }
+        } else {
             res.send('Deal Id Not found');
-        }        
+        }
         console.log("sumoquote create project by hubspot object id end")
         return res.status(200).json({message: "Valid url"});
     } catch (error) {

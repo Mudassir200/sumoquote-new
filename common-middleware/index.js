@@ -61,11 +61,16 @@ exports.requiredAuth = async (req, res, next) => {
 }
 
 
-exports.isTokenExpired = (date) => {
+exports.isTokenExpired = async (date) => {
     return date < new Date();
 };
 
-exports.getExpiry = (expiresIn) => {
+exports.getExpiry = async (expiresIn) => {
     const expiryDate = Date.now() + (expiresIn - 60) * 1000;
     return new Date(expiryDate);
+}
+
+exports.checkPropertyObj = async (obj, property) => {
+    if (typeof obj[property] !== 'undefined' && obj.hasOwnProperty(property) && obj[property] !== null && obj[property]) return true
+    else return false
 }

@@ -7,9 +7,7 @@ const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
     console.log("Hubspot Auth connect start");
-    res.render('pages/connecthubspot', {
-        url:process.env.HUBSPOT_COONETION_URL
-    });
+    res.render('pages/connecthubspot', {url: process.env.HUBSPOT_COONETION_URL});
 }
 
 exports.callback = async (req, res) => {
@@ -37,7 +35,7 @@ exports.callback = async (req, res) => {
             if (findUser) {
                 findUser.hubspotRefreshToken = tokenStore.refresh_token;
                 findUser.hubspotAccessToken = tokenStore.access_token;
-                findUser.hubspotTokenExpiry = getExpiry(tokenStore.expires_in);
+                findUser.hubspotTokenExpiry = await getExpiry(tokenStore.expires_in);
                 await findUser.save()
                 tokenStore.updated_at = new Date();
                 hubspot.setAccessToken((tokenStore.access_token));
@@ -49,11 +47,11 @@ exports.callback = async (req, res) => {
                     hubspotPortalId: userInfo.data.hub_id,
                     hubspotRefreshToken: tokenStore.refresh_token,
                     hubspotAccessToken: tokenStore.access_token,
-                    hubspotTokenExpiry: getExpiry(tokenStore.expires_in)
+                    hubspotTokenExpiry: await getExpiry(tokenStore.expires_in)
                 })
                 await user.save();
                 userId = user._id;
-                console.log("Create New user .."+userId);
+                console.log("Create New user .." + userId);
             }
             console.log("Hubspot Auth callback end");
             return res.redirect('/sumoquote/connect?id=' + userId);
@@ -74,14 +72,16 @@ exports.crmCardReport = async (req, res) => {
         console.log(sumoToken);
         const associatedObjectId = req.query.associatedObjectId;
 
-        const data = await getProjectById(associatedObjectId, sumoToken,'development');
+        const data = await getProjectById(associatedObjectId, sumoToken, 'development');
+        // console.log(data.Data[0]);
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
         }
         let projectObject = (data.Data.find((data) => data.ProjectIdDisplay === associatedObjectId))
 
         if (projectObject && projectObject ?. Id) {
-            const reports = await getReportsByProjectId(projectObject.Id, sumoToken);
+            const reports = await getReportsByProjectId(projectObject.Id, sumoToken, 'development');
+            console.log(reports);
             if (reports ?. message !== undefined || reports ?. message) {
                 return res.status(400).json(reports);
             }

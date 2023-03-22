@@ -6,7 +6,7 @@ const {isTokenExpired, getExpiry} = require("../common-middleware");
 exports.getHubspotAccessToken = async (req, res, next) => {
     try {
         console.log("Get hubspot access token start")
-        const tokenExpired = isTokenExpired(req.user.hubspotTokenExpiry);
+        const tokenExpired = await isTokenExpired(req.user.hubspotTokenExpiry);
         if (tokenExpired) {
             let response = await this.refreshHubspotAccessToken(req.user)
             if (response?.message !== undefined || response?.message) {
@@ -34,7 +34,7 @@ exports.refreshHubspotAccessToken = async (user) => {
         };
         const {data: response} = await axios(config)
         user.hubspotAccessToken = response.access_token;
-        user.hubspotTokenExpiry = getExpiry(response.expires_in);
+        user.hubspotTokenExpiry = await getExpiry(response.expires_in);
         
         await user.save();
         console.log("updated hubspot access token :- ",response)
@@ -49,7 +49,7 @@ exports.refreshHubspotAccessToken = async (user) => {
 exports.getHubspotObjectData = async (id, object, token,properties="?") => {
     try {
         console.log("Hubspot get object data start")
-        console.log("Hubspot Object:- " + object + "and ObjectId :- " + id)
+        console.log("Hubspot Object:- " + object + " and ObjectId :- " + id)
         const config = {
             method: 'get',
             url: 'https://api.hubapi.com/crm/v3/objects/' + object + '/' + id + properties,
@@ -59,7 +59,7 @@ exports.getHubspotObjectData = async (id, object, token,properties="?") => {
             }
         };
 
-        const data = await axios(config);
+        const {data} = await axios(config);
         console.log("Hubspot get object data end")
         return data;
     } catch (error) {

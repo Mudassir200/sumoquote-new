@@ -4,7 +4,7 @@ const {isTokenExpired, getExpiry} = require("../common-middleware");
 exports.getSumoquoteAccessToken = async (req, res, next) => {
     try {
         console.log("Get sumoquote access token start")
-        const tokenExpired = isTokenExpired(req.user.sumoquoteTokenExpiry);
+        const tokenExpired = await isTokenExpired(req.user.sumoquoteTokenExpiry);
         if (tokenExpired) {
             let response = await this.refreshSumoquoteAccessToken(req.user)
             if (response?.message !== undefined || response?.message) {
@@ -38,7 +38,7 @@ exports.refreshSumoquoteAccessToken = async (user) => {
 
         const {data: response} = await axios(config)
         user.sumoquoteAccessToken = response.access_token;
-        user.sumoquoteTokenExpiry = getExpiry(response.expires_in);
+        user.sumoquoteTokenExpiry = await getExpiry(response.expires_in);
         user.sumoquoteRefreshToken = response.refresh_token;
 
         await user.save();
