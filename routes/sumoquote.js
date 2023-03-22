@@ -9,6 +9,7 @@ router.get('/connect',connect);
 router.get('/callback',callback);
 router.get('/disconnect',disconnect);
 router.get('/webhook/signatory-signed/:sumoquoteWebhookId',responseWebhook);
+router.post('/webhook/signatory-signed/:sumoquoteWebhookId',responseWebhook);
 
 
 router.get('/create-project',requiredAuth,getHubspotAccessToken,getSumoquoteAccessToken,createProjectByObjectId);
