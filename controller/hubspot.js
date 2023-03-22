@@ -1,8 +1,10 @@
 const {User} = require('../model/user');
 const axios = require('axios');
 const Hubspot = require('hubspot');
-const {getExpiry} = require('../common-middleware');
+const {getExpiry, checkPropertyObj} = require('../common-middleware');
 const {getProjectById, getReportsByProjectId} = require('./sumoquote');
+const {getHubspotObjectData} = require('../helper/hubspotAuth');
+const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
 const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
@@ -247,25 +249,79 @@ exports.uploadPDFtoHubspot = async (id) => {
 exports.setting = async (req, res) => {
     try {
         console.log("Hubspot setting start")
-        const user = await User.findById(req.query.userId);
-        const connected = !! user.sumoquoteWebhookId;
+        if (req.query.portalId) {
+            res.render('pages/settings', {
+                deal: req.query.deal,
+                portalId: req.query.portalId,
+                sumoConnection: "disconnect",
+                connectionLink: process.env.HOST + '/sumoquote/disconnect?connectionId=' + req.user._id
+            });
+        } else {
+            return res.send("Portal Id Not Found!");
+        }
 
-        res.render('pages/settings', {
-            deal: req.query.deal,
-            portal: req.query.portal,
-            sumoConnection: connected ? "disconnect" : "connect",
-            connectionLink: connected ? `${
-                process.env.HOST
-            }/sumoquote/disconnect?connectionId=${
-                user._id
-            }` : `${
-                process.env.HOST
-            }/sumoquote/connect?id=${
-                user._id
-            }`
-        });
-        console.log("Hubspot setting end")
     } catch (error) {
         return res.status(400).json({from: '(controller/hubspot/setting) Function Error :- ', message: error.message});
+    }
+}
+
+exports.syncDealToProject = async (req, res) => {
+    try {
+        console.log("Hubspot syncronize deal to project start")
+        if (req.query.deal) {
+            const user = req.user;
+            let properties = "?properties=dealname,hs_object_id,companycam_project_id,customer_first_name,customer_last_name,email,phone_number,address_line_1,address_line_2,state,zip_code,city"
+            let objectData = await getHubspotObjectData(req.query.deal, 'deal', user.hubspotAccessToken, properties);
+            if (objectData.id) {
+                let newSumoUpdate = {};
+                let objectProperties = objectData.properties;
+                if (await checkPropertyObj(objectProperties, 'customer_first_name')) 
+                    newSumoUpdate["customerFirstName"] = objectProperties.customer_first_name;
+                 else 
+                    newSumoUpdate["customerFirstName"] = "No first name";
+                
+                if (await checkPropertyObj(objectProperties, 'address_line_1')) 
+                    newSumoUpdate["addressLine1"] = objectProperties.address_line_1;
+                 else 
+                    newSumoUpdate["addressLine1"] = "Unknown";
+                
+                if (await checkPropertyObj(objectProperties, 'customer_last_name')) 
+                    newSumoUpdate["customerLastName"] = objectProperties.customer_last_name;
+                
+                if (await checkPropertyObj(objectProperties, 'phone_number')) 
+                    newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
+                
+                if (await checkPropertyObj(objectProperties, 'email')) 
+                    newSumoUpdate["emailAddress"] = objectProperties.email;
+                
+                if (await checkPropertyObj(objectProperties, 'zip_code')) 
+                    newSumoUpdate["postalCode"] = objectProperties.zip_code;
+                
+                if (await checkPropertyObj(objectProperties, 'city')) 
+                    newSumoUpdate["city"] = objectProperties.city;
+
+                const {Data} = await getProjectById(req.query.deal, user.sumoquoteAPIKEY, 'development');
+                if (Data[0].Id) {
+                    console.log(Data[0].Id);
+                    console.log("New Update Data :- ", newSumoUpdate);
+                    const config = {
+                        method: 'put',
+                        url: 'https://api.sumoquote.com/v1/Project/' + Data[0].Id,
+                        headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/*+json'),
+                        data: JSON.stringify(newSumoUpdate)
+                    };
+                    let {data} = await axios(config);
+                    console.log("Project Update response :- ", data);
+                    return res.status(200).json({message: 'Data Syncronize successfully!'});
+                }
+            } else {
+                return res.send('Deal Data Not get from api please re-sync data');
+            }
+        } else {
+            return res.send("Deal Id Not Found!");
+        }
+        console.log("Hubspot syncronize deal to project end")
+    } catch (error) {
+        return res.status(400).json({from: '(controller/hubspot/syncDealToProject) Function Error :- ', message: error.message});
     }
 }

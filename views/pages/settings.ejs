@@ -61,7 +61,7 @@
 
     <P class="notice">clicking this will update your deal customer data with sumoquote project</P>
     <input id="deal" hidden disabled value=<%=deal %> />
-    <input id="portal" hidden disabled value=<%=portal %> />
+    <input id="portal" hidden disabled value=<%=portalId %> />
     <!-- BUTTONS -->
     <div class="form-buttons">
       <button id="sync" class="btn btn-outline-success" onclick="sync()">Sync data</button>
@@ -93,7 +93,7 @@
       const syncMessage = document.getElementById('sync-msg');
       syncMessage.innerText = `Please wait ...`
 
-      fetch(`/hubspot/sync/${deal}/${portal}`, {
+      fetch(`/hubspot/sync?deal=${deal}&portalId=${portal}`, {
         method: 'post'
       }).then(data => data.json()).then(data => {
         const syncMessage = document.getElementById('sync-msg');
