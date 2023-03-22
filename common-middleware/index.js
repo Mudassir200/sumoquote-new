@@ -71,6 +71,8 @@ exports.getExpiry = async (expiresIn) => {
 }
 
 exports.checkPropertyObj = async (obj, property) => {
-    if (typeof obj[property] !== 'undefined' && obj.hasOwnProperty(property) && obj[property] !== null && obj[property]) return true
-    else return false
+    if (typeof obj[property] !== 'undefined' && obj[property] !== null && obj.hasOwnProperty(property) && obj[property]) 
+        return true
+     else 
+        return false
 }

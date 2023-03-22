@@ -228,39 +228,39 @@ exports.createProjectByObjectId = async (req, res) => {
                 let objectProperties = objectData.properties;
                 newSumoUpdate["projectId"] = objectData.id;
                 newSumoUpdate["PortalId"] = user.hubspotPortalId;
-
-                if (checkPropertyObj(objectProperties, 'customer_first_name')) 
+                console.log(objectProperties);
+                if (await checkPropertyObj(objectProperties, 'customer_first_name')) 
                     newSumoUpdate["customerFirstName"] = objectProperties.customer_first_name;
                  else 
                     newSumoUpdate["customerFirstName"] = "No first name";
                 
-                if (checkPropertyObj(objectProperties, 'address_line_1')) 
+                if (await checkPropertyObj(objectProperties, 'address_line_1')) 
                     newSumoUpdate["addressLine1"] = objectProperties.address_line_1;
                  else 
                     newSumoUpdate["addressLine1"] = "Unknown";
                 
-                if (checkPropertyObj(objectProperties, 'customer_last_name')) 
+                if (await checkPropertyObj(objectProperties, 'customer_last_name')) 
                     newSumoUpdate["customerLastName"] = objectProperties.customer_last_name;
                 
-                if (checkPropertyObj(objectProperties, 'phone_number')) 
+                if (await checkPropertyObj(objectProperties, 'phone_number')) 
                     newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
                 
-                if (checkPropertyObj(objectProperties, 'email')) 
+                if (await checkPropertyObj(objectProperties, 'email')) 
                     newSumoUpdate["emailAddress"] = objectProperties.email;
                 
-                if (checkPropertyObj(objectProperties, 'state')) 
+                if (await checkPropertyObj(objectProperties, 'state')) 
                     newSumoUpdate["province"] = objectProperties.state;
                 
-                if (checkPropertyObj(objectProperties, 'zip_code')) 
+                if (await checkPropertyObj(objectProperties, 'zip_code')) 
                     newSumoUpdate["postalCode"] = objectProperties.zip_code;
                 
-                if (checkPropertyObj(objectProperties, 'city')) 
+                if (await checkPropertyObj(objectProperties, 'city')) 
                     newSumoUpdate["city"] = objectProperties.city;
                 
-                if (checkPropertyObj(objectProperties, 'address_line_2')) 
+                if (await checkPropertyObj(objectProperties, 'address_line_2')) 
                     newSumoUpdate["addressLine2"] = objectProperties.address_line_2;
                 
-                if (checkPropertyObj(objectProperties, 'companycam_project_id')) {
+                if (await checkPropertyObj(objectProperties, 'companycam_project_id')) {
                     let projectIntegration = {
                         'companyCamProjectId' : objectProperties.companycam_project_id
                     };
@@ -276,17 +276,22 @@ exports.createProjectByObjectId = async (req, res) => {
                     data: newSumoUpdate
                 };
 
-                let result = await axios(config);
-                console.log("Project create response :- ", result);
+                let {data} = await axios(config);
+                console.log("Project create response :- ", data);
+                console.log("sumoquote create project by hubspot object id end")
+                if(data.Data.Id){
+                    return res.redirect(301,'https://app.sumoquote.com/project/'+objectData.id);
+                }else{
+                    return res.send('Project Not Create Properly from api please re-create project');
+                }
             } else {
-                res.send('Deal Data Not get from api please re-create project');
+                return res.send('Deal Data Not get from api please re-create project');
             }
         } else {
-            res.send('Deal Id Not found');
+            return res.send('Deal Id Not found');
         }
-        console.log("sumoquote create project by hubspot object id end")
-        return res.status(200).json({message: "Valid url"});
+        return res.send('Someting Wrong in Create Project!.Please re-create project');
     } catch (error) {
-        return {from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error.message};
+        return res.status(400).json({from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error.message});
     }
 }
