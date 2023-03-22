@@ -175,17 +175,18 @@ exports.responseWebhook = async (req, res) => {
         console.log("Response from webhook :- ")
         console.log(req.body)
         let projectId = req.body.ProjectId;
-        console.log("Prject id Response from webhook :- "+ projectId)
-        let SignatureDate = req.body.SignatureDate;
-        let SentForSignatureOn = req.body.SentForSignatureOn;
-        const user = await User.findOne({sumoquoteWebhookId});
+        console.log("Project id Response from webhook :- "+ projectId)
+        console.log("Hubspot DealID id Response from webhook :- "+ req.body.ProjectIdDisplay)
 
-        const data = await this.getProjectById(projectId, sumoToken);
+        const user = await User.findOne({sumoquoteWebhookId});
+        console.log("user",user);
+        const data = await this.getProjectById(req.body.ProjectIdDisplay, user.sumoquoteAPIKEY, 'development');
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
         }
+        console.log(data)
         console.log("sumoquote webhook response end")
-
+        return res.status(200).json({message:"Webhook Acceptable"});
     } catch (error) {
         return res.status(400).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
     }
