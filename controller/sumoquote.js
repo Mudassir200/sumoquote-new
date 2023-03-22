@@ -171,11 +171,11 @@ exports.responseWebhook = async (req, res) => {
         let SentForSignatureOn = req.body.SentForSignatureOn;
         const user = await User.findOne({sumoquoteWebhookId});
 
-        const data = await getProjectById(projectId, sumoToken);
+        const data = await this.getProjectById(projectId, sumoToken);
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
         }
-        console.log("sumoquote webhook response start")
+        console.log("sumoquote webhook response end")
 
     } catch (error) {
         return {from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message};
