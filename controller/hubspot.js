@@ -175,7 +175,7 @@ exports.crmCardReport = async (req, res) => {
                     "type": "IFRAME",
                     "width": 890,
                     "height": 748,
-                    "uri": HOST + '/hubspot/settings?deal=' + associatedObjectId + '&portal=' + req.user.hubspotPortalId + '&userId=' + req.user._id,
+                    "uri": HOST + '/hubspot/settings?deal=' + associatedObjectId + '&portalId=' + req.user.hubspotPortalId + '&userId=' + req.user._id,
                     "label": "Settings"
                 },
                 "primaryAction": {
@@ -231,7 +231,6 @@ exports.reportStatus = async (sent, signed) => {
 
 
 exports.uploadPDFtoHubspot = async (id) => {
-
     try {
         let option = {
             "access": "PUBLIC_NOT_INDEXABLE",
@@ -242,5 +241,31 @@ exports.uploadPDFtoHubspot = async (id) => {
         };
     } catch (error) {
         console.log(error)
+    }
+}
+
+exports.setting = async (req, res) => {
+    try {
+        console.log("Hubspot setting start")
+        const user = await User.findById(req.query.userId);
+        const connected = !! user.sumoquoteWebhookId;
+
+        res.render('pages/settings', {
+            deal: req.query.deal,
+            portal: req.query.portal,
+            sumoConnection: connected ? "disconnect" : "connect",
+            connectionLink: connected ? `${
+                process.env.HOST
+            }/sumoquote/disconnect?connectionId=${
+                user._id
+            }` : `${
+                process.env.HOST
+            }/sumoquote/connect?id=${
+                user._id
+            }`
+        });
+        console.log("Hubspot setting end")
+    } catch (error) {
+        return res.status(400).json({from: '(controller/hubspot/setting) Function Error :- ', message: error.message});
     }
 }
