@@ -132,12 +132,19 @@ exports.deleteWebhook = async (id, sumoToken) => {
     }
 }
 
+exports.getMogooseId = async () => {
+    let id = new mongoose.Types.ObjectId()
+    console.log(id);
+    return id;
+}
+
 exports.createWebhook = async (id, sumoToken) => {
     try {
         console.log("sumoquote create webhook start")
         let data = JSON.stringify([{
-                "hookEvent": "Report_Signed",
+                "hookEvent": "Project_Updated", //Report_Signed
                 "hookUrl": process.env.HOST + '/sumoquote/webhook/signatory-signed/' + id,
+                "isActive":true,
                 "isZapHook": false
             }]);
 
