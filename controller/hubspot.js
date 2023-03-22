@@ -290,7 +290,13 @@ exports.syncDealToProject = async (req, res) => {
                 
                 if (await checkPropertyObj(objectProperties, 'phone_number')) 
                     newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
+
+                if (await checkPropertyObj(objectProperties, 'state')) 
+                    newSumoUpdate["province"] = objectProperties.state;
                 
+                if (await checkPropertyObj(objectProperties, 'address_line_2')) 
+                    newSumoUpdate["addressLine2"] = objectProperties.address_line_2;
+
                 if (await checkPropertyObj(objectProperties, 'email')) 
                     newSumoUpdate["emailAddress"] = objectProperties.email;
                 
