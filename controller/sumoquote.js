@@ -172,8 +172,10 @@ exports.responseWebhook = async (req, res) => {
         console.log("sumoquote webhook response start")
         let sumoquoteWebhookId = req.params.sumoquoteWebhookId;
         console.log("Response from webhook Id :- " + sumoquoteWebhookId)
-        console.log("Response from webhook :- ", req.body)
+        console.log("Response from webhook :- ")
+        console.log(req.body)
         let projectId = req.body.ProjectId;
+        console.log("Prject id Response from webhook :- "+ projectId)
         let SignatureDate = req.body.SignatureDate;
         let SentForSignatureOn = req.body.SentForSignatureOn;
         const user = await User.findOne({sumoquoteWebhookId});
@@ -185,7 +187,7 @@ exports.responseWebhook = async (req, res) => {
         console.log("sumoquote webhook response end")
 
     } catch (error) {
-        return {from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message};
+        return res.status(400).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
     }
 }
 
