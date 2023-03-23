@@ -26,7 +26,7 @@
   },
   "ExecutiveSummaryPage": {
     "PageIndex": 1,
-    "Summary": "<p>Hi {{CUSTOMER_NAME}},</p><p>Welcome to {{SALESPERSON_NAME}}, where we provide quality roofing solutions that are tailored to your individual needs. We understand that choosing the right roofing system for your home or business is a big decision, so our experienced roofers are here to help you make the best choice for your property. We look forward to helping you find the perfect roofing system to keep you safe and dry." - {{SALESPERSON_NAME}}</p>",
+    "Summary": "<p>Hi {{CUSTOMER_NAME}},</p><p>Welcome to {{SALESPERSON_NAME}}, where we provide quality roofing solutions that are tailored to your individual needs. We understand that choosing the right roofing system for your home or business is a big decision, so our experienced roofers are here to help you make the best choice for your property. We look forward to helping you find the perfect roofing system to keep you safe and dry.\" - {{SALESPERSON_NAME}}</p>",
     "IsVisible": true,
     "PageTitle": "Introduction",
     "Change": false,
@@ -34,7 +34,20 @@
     "ExcludedFromReport": false
   },
   "InspectionPage": {
-    "InspectionSections": [ [Object] ],
+    "InspectionSections": [
+      {
+        "SectionId": 1,
+        "SectionTitle": "",
+        "Style": 0,
+        "InspectionItems": [
+          {
+            "ItemId": 1,
+            "ImageId": "",
+            "Summary": ""
+          }
+        ]
+      }
+    ],
     "IsVisible": true,
     "PageIndex": 2,
     "PageTitle": "Inspection",
@@ -43,17 +56,95 @@
     "ExcludedFromReport": false
   },
   "AuthorizationPage": {
-    "AuthorizationSections": [],
-    "ProductSelections": [],
-    "Signatories": [],
-    "Signatures": [],
+    "AuthorizationSections": [
+      {
+        "SectionId": 1,
+        "SectionTitle": "Upgrades for your New Roof",
+        "InvoiceEnabled": false,
+        "AuthorizationItems": [
+          {
+            "ItemId": 0,
+            "ItemUUID": "2c162d1d-32bc-496c-9ae9-e1d3ea07a450",
+            "Description": "",
+            "Selected": false,
+            "InvoiceEnabled": false,
+            "PriceDetailId": null,
+            "PriceDetailName": null,
+            "TierPayments": [],
+            "MarginLocked": false,
+            "Price": 0,
+            "Quantity": 0,
+            "IsTaxExempted": false
+          }
+        ]
+      }
+    ],
+    "ProductSelections": [
+      {
+        "Product": "Shingle Color",
+        "Selection": "",
+        "Id": "077a5a0b-1522-4247-84e0-51916d50d739"
+      },
+      {
+        "Product": "Vent Color",
+        "Selection": "",
+        "Id": "6a71bf04-c772-4adc-b88f-7de331b68984"
+      },
+      {
+        "Product": "Metal Color",
+        "Selection": "",
+        "Id": "a6b8c88a-4332-4028-b0e0-ff9759bc0350"
+      }
+    ],
+    "Signatories": [
+      {
+        "SignatoryId": "be17bb65-c165-479c-8164-291412196b99",
+        "Name": null,
+        "FirstName": "Test",
+        "LastName": "Test webhook",
+        "EmailAddress": "test@gmail.com",
+        "SigningOrder": 1,
+        "NameLabel": "Primary signer",
+        "IsPrimary": true,
+        "FullName": "Test Test webhook",
+        "AddToCreditApplication": true
+      }
+    ],
+    "Signatures": [
+      {
+        "SignatoryId": "be17bb65-c165-479c-8164-291412196b99",
+        "FirstName": "Test",
+        "LastName": "Test webhook",
+        "FullName": "Test Test webhook",
+        "EmailAddress": "test@gmail.com",
+        "SigningOrder": 1,
+        "Signature": "Ayaz Madiya",
+        "SignatureRequestedOn": "2023-03-22T13:10:16.1867986+00:00",
+        "SignedOn": "2023-03-22T13:10:51.4117399+00:00",
+        "PrimarySignatory": true,
+        "CustomerSignatureConfirmation": true,
+        "SignatoryInitial": {
+          "TermsAcknowledgementRequired": false,
+          "TermsAcknowledged": false,
+          "TermsPageName": "Terms and Conditions",
+          "TermsAcknowledgedDate": null,
+          "SignatoryCustomPageInitials": []
+        },
+        "SigningIP": "103.177.66.152",
+        "InkSignature": "data:image/png;base64,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",
+        "SignatureSource": 1
+      }
+    ],
     "Disclaimer": "Estimates valid for 30 days from date of estimate / A 50% deposit is required before any project begins.",
-    "Notes": "By signing this form I agree to and confirm the following": I certify that I am the registered owner of the above project property, or have the legal permission to authorize the work as stated. I agree to pay the total project price and understand that this work will be completed in accordance with industry best practices.",
-    "CustomerNotes": ",
+    "Notes": "By signing this form I agree to and confirm the following: I certify that I am the registered owner of the above project property, or have the legal permission to authorize the work as stated. I agree to pay the total project price and understand that this work will be completed in accordance with industry best practices.",
+    "CustomerNotes": "",
     "SelectionsTitle": "My Product Selections",
     "InPersonSignature": false,
     "ManuallySigned": false,
-    "PriceDisplayOption": { "DisplayItemQuantity": true, "DisplayItemUnitPrice": true },
+    "PriceDisplayOption": {
+      "DisplayItemQuantity": true,
+      "DisplayItemUnitPrice": true
+    },
     "FinancingTier": "89135ea7-fa05-4581-8564-96600b3a7cb7",
     "ProjectDefaultSignatory": {
       "SignatoryId": "be17bb65-c165-479c-8164-291412196b99",
@@ -75,7 +166,29 @@
     "ExcludedFromReport": false
   },
   "EstimateDetailsPage": {
-    "EstimateSections": [],
+    "EstimateSections": [
+      {
+        "SectionId": 1,
+        "SectionTitle": "",
+        "InvoiceEnabled": false,
+        "Show": true,
+        "EstimateItems": [
+          {
+            "ItemId": 1,
+            "ItemUUID": null,
+            "Description": "",
+            "InvoiceEnabled": false,
+            "PriceDetailId": null,
+            "PriceDetailName": null,
+            "MarginLocked": false,
+            "Price": 0,
+            "Quantity": 0,
+            "IsTaxExempted": false
+          }
+        ],
+        "IsLockedForAddingItems": false
+      }
+    ],
     "Notes": null,
     "ShowCustomerPricing": false,
     "TieredPricing": true,
@@ -84,14 +197,163 @@
       "Show": true,
       "Selected": true,
       "Name": "Belmont Windows",
-      "EstimateSections": [],
+      "EstimateSections": [
+        {
+          "SectionId": 1,
+          "SectionTitle": "Material",
+          "InvoiceEnabled": false,
+          "Show": true,
+          "EstimateItems": [
+            {
+              "ItemId": -1,
+              "ItemUUID": "83746feb-e423-4d0b-82d9-d14f30043e92",
+              "Description": "BELMONT SERIES WINDOWS:\n\nWindow Type : \n\nU.I.: \n\nWindow Color: \n\nGlass Type: \n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "afa8a470-9b40-4ca6-9eb0-828d431e2474",
+              "PriceDetailName": "Belmont Series Windows",
+              "MarginLocked": false,
+              "Price": 54.17,
+              "Quantity": 2,
+              "IsTaxExempted": false
+            }
+          ],
+          "IsLockedForAddingItems": false
+        },
+        {
+          "SectionId": 2,
+          "SectionTitle": "Special Add-ons",
+          "InvoiceEnabled": false,
+          "Show": true,
+          "EstimateItems": [
+            {
+              "ItemId": 1,
+              "ItemUUID": "1e47ea54-f7e2-4121-9d1e-c24ca9dd3f53",
+              "Description": "BELMONT STANDARD EXTERIOR COATED COLORS: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "bf5d4d66-064c-4168-a00a-80bbe9f0a8db",
+              "PriceDetailName": "Belmont Standard Exterior Coated Colors",
+              "MarginLocked": false,
+              "Price": 204.77,
+              "Quantity": 3,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 2,
+              "ItemUUID": "e62a4812-ea05-4c9d-a2fe-eb665c753993",
+              "Description": "BELMONT CUSTOM EXTERIOR COLORS: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "aaf8310f-1564-48f2-ac14-70873d10e773",
+              "PriceDetailName": "Belmont Custom Exterior Colors",
+              "MarginLocked": false,
+              "Price": 1257.37,
+              "Quantity": 2,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 3,
+              "ItemUUID": "6a33dba3-7fc9-4ba4-8acd-644d4f19ab50",
+              "Description": "BELMONT BLACK INTERIOR LAMINATE: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "635ada1c-169d-4f11-bd81-1399df97bc0f",
+              "PriceDetailName": "Belmont Black Interior Laminate",
+              "MarginLocked": false,
+              "Price": 161.67,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 4,
+              "ItemUUID": "2bca16bb-64b6-4d54-8312-cecd901a6a0a",
+              "Description": "BELMONT EXTRUDED FULL SCREEN: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "09cc4443-4462-4d87-9cfd-8a552f2e143a",
+              "PriceDetailName": "Belmont Extruded Full Screen",
+              "MarginLocked": false,
+              "Price": 25.15,
+              "Quantity": 1,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 5,
+              "ItemUUID": "467c971e-b9fc-4ed9-a227-cbf2ef8e39dd",
+              "Description": "BELMONT CLEAR-VUE SCREEN: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "315017a2-172b-4831-8285-07d3966f34e2",
+              "PriceDetailName": "Belmont Clear-Vue Screen",
+              "MarginLocked": false,
+              "Price": 21.55,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 6,
+              "ItemUUID": "d0a6cc91-2f68-413a-b17a-e87b8149d72e",
+              "Description": "BELMONT INSULATING FOAM FILLED FRAME: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "2fe9974d-4f64-4c10-a745-6bbd809f790d",
+              "PriceDetailName": "Belmont Insulating Foam Filled Frame",
+              "MarginLocked": false,
+              "Price": 71.85,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 7,
+              "ItemUUID": "27924ef8-d246-4af9-8e79-7bed5dab0f8c",
+              "Description": "BELMONT WHITE FACTORY MULL: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "4bf16521-3a49-4ec4-8b9a-04889cf468b8",
+              "PriceDetailName": "Belmont White Factory Mull",
+              "MarginLocked": false,
+              "Price": 46.7,
+              "Quantity": 1,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 8,
+              "ItemUUID": "35f860bb-1b4b-42d9-b505-1471487722b4",
+              "Description": "BELMONT TAN FACTORY MULL: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "770c9bdd-34f1-4de1-add3-ea291b52418b",
+              "PriceDetailName": "Belmont Tan Factory Mull",
+              "MarginLocked": false,
+              "Price": 51.37,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            },
+            {
+              "ItemId": 9,
+              "ItemUUID": "63a16d2c-1d16-490c-b7ae-e2f35a2ad261",
+              "Description": "BELMONT BLACK FACTORY MULL: \n\nused for the following: Double Hung, Twin Slider, Picture window\n",
+              "InvoiceEnabled": false,
+              "PriceDetailId": "849a9ade-b29f-4503-b2c5-dd0186d3c1d4",
+              "PriceDetailName": "Belmont Black Factory Mull",
+              "MarginLocked": false,
+              "Price": 56.05,
+              "Quantity": 1,
+              "IsTaxExempted": false
+            }
+          ],
+          "IsLockedForAddingItems": false
+        }
+      ],
       "SolarSection": null,
       "Notes": "Test",
       "LinkedTier": null,
-      "LinkedTierDescription": ",
+      "LinkedTierDescription": "",
       "Financing": null,
       "FinancingCost": 0,
-      "DiscountDetails": [],
+      "DiscountDetails": [
+        {
+          "Name": "Test discount 10%",
+          "Type": 0,
+          "DollarAmount": 0,
+          "Percent": 10,
+          "Id": "d0de0d99-6245-47f1-95e8-8348313313c9",
+          "InvoiceEnabled": true,
+          "InvoiceHidden": false
+        }
+      ],
       "MarkupDetails": [],
       "ShowDiscounts": true,
       "ShowMarkups": true
@@ -101,7 +363,29 @@
       "Show": false,
       "Selected": false,
       "Name": "New Quote",
-      "EstimateSections": [],
+      "EstimateSections": [
+        {
+          "SectionId": 1,
+          "SectionTitle": "",
+          "InvoiceEnabled": false,
+          "Show": true,
+          "EstimateItems": [
+            {
+              "ItemId": 1,
+              "ItemUUID": "cf2f51cf-b6f6-4eea-964c-de5266c4a388",
+              "Description": "",
+              "InvoiceEnabled": false,
+              "PriceDetailId": null,
+              "PriceDetailName": null,
+              "MarginLocked": false,
+              "Price": 0,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            }
+          ],
+          "IsLockedForAddingItems": false
+        }
+      ],
       "SolarSection": null,
       "Notes": null,
       "LinkedTier": null,
@@ -118,7 +402,29 @@
       "Show": false,
       "Selected": false,
       "Name": "New Quote",
-      "EstimateSections": [],
+      "EstimateSections": [
+        {
+          "SectionId": 1,
+          "SectionTitle": "",
+          "InvoiceEnabled": false,
+          "Show": true,
+          "EstimateItems": [
+            {
+              "ItemId": 1,
+              "ItemUUID": "8a8499a6-f64c-4cef-98ca-696296933848",
+              "Description": "",
+              "InvoiceEnabled": false,
+              "PriceDetailId": null,
+              "PriceDetailName": null,
+              "MarginLocked": false,
+              "Price": 0,
+              "Quantity": 0,
+              "IsTaxExempted": false
+            }
+          ],
+          "IsLockedForAddingItems": false
+        }
+      ],
       "SolarSection": null,
       "Notes": null,
       "LinkedTier": null,
@@ -138,7 +444,14 @@
       "DisplaySectionTotalPrice": true
     },
     "FinancingOptions": { "FinancingEnabled": false, "ShowQuoteTotal": false },
-    "TaxRates": [],
+    "TaxRates": [
+      {
+        "Name": "GST ",
+        "Rate": 5,
+        "Required": false,
+        "TaxRateId": "10006fdd-02ca-468f-b008-7f71d848e993"
+      }
+    ],
     "IsVisible": true,
     "PageIndex": 3,
     "PageTitle": "Quote Details",
@@ -147,8 +460,8 @@
     "ExcludedFromReport": false
   },
   "TermsAndConditionsPage": {
-    "Summary": ",
-    "Pdf": { "Name": null, Id": null, "ParentId": null, "Folder": null },
+    "Summary": "",
+    "Pdf": { "Name": null, "Id": null, "ParentId": null, "Folder": null },
     "SummarySelected": true,
     "SignatoryAcknowledgementRequired": false,
     "UpdatedDate": null,
@@ -198,7 +511,12 @@
   "TotalSignedValueWithTax": 3180.19905,
   "TotalSignedUpgradesValue": 0,
   "TotalSignedUpgradesValueWithTax": 0,
-  "MetaData": [ { "EmailAddress": "test@gmail.com", "Phone": "+91 12345-67890" } ],
+  "MetaData": [
+    {
+      "EmailAddress": "test@gmail.com",
+      "Phone": "+91 12345-67890"
+    }
+  ],
   "TaxRates": null,
   "SignedSumoReportDetail": null
 }

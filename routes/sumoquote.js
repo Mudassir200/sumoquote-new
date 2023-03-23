@@ -8,7 +8,7 @@ const { connect, disconnect, callback, responseWebhook, createProjectByObjectId 
 router.get('/connect',connect);
 router.get('/callback',callback);
 router.get('/disconnect',disconnect);
-router.post('/webhook/signatory-signed/:sumoquoteWebhookId',responseWebhook);
+router.post('/webhook/signatory-signed/:sumoquoteWebhookId',requiredAuth,getHubspotAccessToken,getSumoquoteAccessToken,responseWebhook);
 
 
 router.get('/create-project',requiredAuth,getHubspotAccessToken,getSumoquoteAccessToken,createProjectByObjectId);

@@ -1,10 +1,10 @@
 const axios = require('axios');
-const {getExpiry, checkPropertyObj} = require('../common-middleware');
+const {getExpiry, checkPropertyObj, getDate} = require('../common-middleware');
 const {User} = require('../model/user');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
-const {getHubspotObjectData} = require('../helper/hubspotAuth');
+const {getHubspotObjectData,updateDealdata} = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -173,33 +173,65 @@ exports.responseWebhook = async (req, res) => {
         console.log("sumoquote webhook response start")
         let sumoquoteWebhookId = req.params.sumoquoteWebhookId;
         console.log("Response from webhook Id :- " + sumoquoteWebhookId)
-        console.log("Response from webhook :- ")
-        console.log(JSON.stringify(req.body))
-        console.log(JSON.stringify(req.body.InspectionPage));
-        console.log(JSON.stringify(req.body.AuthorizationPage));
-        console.log(JSON.stringify(req.body.EstimateDetailsPage));
-
         let projectId = req.body.ProjectId;
-        console.log("Project id Response from webhook :- " + projectId)
-        console.log("Hubspot DealID id Response from webhook :- " + req.body.ProjectIdDisplay)
+        let SentForSignatureOn = req.body.SentForSignatureOn;
+        let SignatureDate = req.body.SignatureDate;
+        let ProjectIdDisplay = req.body.ProjectIdDisplay;
+        console.log("Project id " + projectId+ " And Deal id " + ProjectIdDisplay)
+        // console.log("Response from webhook :- ")
+        // console.log(JSON.stringify(req.body))
+        // console.log(JSON.stringify(req.body.InspectionPage));
+        // console.log(JSON.stringify(req.body.AuthorizationPage));
+        // console.log(JSON.stringify(req.body.EstimateDetailsPage));
 
-        const user = await User.findOne({sumoquoteWebhookId});
-        console.log("user", user);
-        const data = await this.getProjectById(req.body.ProjectIdDisplay, user.sumoquoteAPIKEY, 'development');
+        const user = req.user;
+        console.log(user);
+        const data = await this.getProjectBySumoProjectId(projectId, user.sumoquoteAPIKEY, 'development');
         if (data ?. message !== undefined || data ?. message) {
-            return res.status(400).json(data);
+            return res.status(200).json(data);
         }
-        console.log(data)
+
+        const {Data:projectdetails} = data;
+        let dealUpdateProperties = {};
+        dealUpdateProperties["reportid"] =  req.body.ReportId;
+        if (projectdetails.ProjectState == 'Won') {
+            dealUpdateProperties["dealstage"] =  "closedwon";
+            dealUpdateProperties["sent_for_signing_date"] = await getDate(SentForSignatureOn);
+        } else if (projectdetails.ProjectState == 'Lost') {
+            dealUpdateProperties["dealstage"] =  "closedlost";
+        }
+
+        if (SentForSignatureOn) {
+            dealUpdateProperties["sign_date"] =  await getDate(SignatureDate);
+        }
+
+        if (req.body.AuthorizationPage.CustomerNotes && req.body.AuthorizationPage.CustomerNotes !== "") {
+            dealUpdateProperties["customer_comments"] =  req.body.AuthorizationPage.CustomerNotes;
+        }
+        if (req.body.AuthorizationPage.ProductSelections[0].Selection && req.body.AuthorizationPage.ProductSelections[0].Selection !== "") {
+            dealUpdateProperties["product_selection___current_crm"] =  req.body.AuthorizationPage.ProductSelections[0].Selection;
+        }
+        if (req.body.AuthorizationPage.ProductSelections[1].Selection && req.body.AuthorizationPage.ProductSelections[1].Selection !== "") {
+            dealUpdateProperties["product_selection___current_phone_system"] =  req.body.AuthorizationPage.ProductSelections[1].Selection;
+        }
+        if (req.body.AuthorizationPage.ProductSelections[2].Selection && req.body.AuthorizationPage.ProductSelections[2].Selection !== "") {
+            dealUpdateProperties["product_selection___apple_pc"] =  req.body.AuthorizationPage.ProductSelections[2].Selection;
+        }
+
+        console.log("properties",dealUpdateProperties)
+
+        const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
+        console.log("sumoquote deal update :- ",response)
         console.log("sumoquote webhook response end")
         return res.status(200).json({message: "Webhook Acceptable"});
     } catch (error) {
-        return res.status(400).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
+        return res.status(200).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
     }
 }
 
-exports.getProjectById = async (id, sumoToken, mode = "production") => {
+exports.getProjectByDealId = async (id, sumoToken, mode = "production") => {
     try {
-        console.log("sumoquote get project by id start")
+        console.log("sumoquote get project by Deal id start")
         let headers = await sumoApiKeyHeader(sumoToken, mode, 'application/json');
         const config = {
             method: 'get',
@@ -207,10 +239,27 @@ exports.getProjectById = async (id, sumoToken, mode = "production") => {
             headers
         };
         const {data} = await axios(config);
-        console.log("sumoquote get project by id end")
+        console.log("sumoquote get project by Deal id end")
         return data;
     } catch (error) {
-        return {from: '(controller/sumoquote/getProjectById) Function Error :- ', message: error.message};
+        return {from: '(controller/sumoquote/getProjectByDealId) Function Error :- ', message: error.message};
+    }
+}
+
+exports.getProjectBySumoProjectId = async (id, sumoToken, mode = "production") => {
+    try {
+        console.log("sumoquote get project by sumo project id start")
+        let headers = await sumoApiKeyHeader(sumoToken, mode, 'application/json');
+        const config = {
+            method: 'get',
+            url: `https://api.sumoquote.com/v1/Project/${id}`,
+            headers
+        };
+        const {data} = await axios(config);
+        console.log("sumoquote get project by sumo project id end")
+        return data;
+    } catch (error) {
+        return {from: '(controller/sumoquote/getProjectBySumoProjectId) Function Error :- ', message: error.message};
     }
 }
 

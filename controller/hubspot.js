@@ -2,7 +2,7 @@ const {User} = require('../model/user');
 const axios = require('axios');
 const Hubspot = require('hubspot');
 const {getExpiry, checkPropertyObj} = require('../common-middleware');
-const {getProjectById, getReportsByProjectId} = require('./sumoquote');
+const {getProjectByDealId, getReportsByProjectId} = require('./sumoquote');
 const {getHubspotObjectData} = require('../helper/hubspotAuth');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
 const HOST = process.env.HOST;
@@ -74,7 +74,7 @@ exports.crmCardReport = async (req, res) => {
         console.log(sumoToken);
         const associatedObjectId = req.query.associatedObjectId;
 
-        const data = await getProjectById(associatedObjectId, sumoToken, 'development');
+        const data = await getProjectByDealId(associatedObjectId, sumoToken, 'development');
         // console.log(data.Data[0]);
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
@@ -99,6 +99,7 @@ exports.crmCardReport = async (req, res) => {
                 }
             }).map((data, i) => {
                 let signedOptions = [];
+                let properties = [];
 
                 if (data.TotalSignedValue) {
                     signedOptions.push({
@@ -127,9 +128,13 @@ exports.crmCardReport = async (req, res) => {
                     "title": data.TitleReportPage.ReportType || "Report",
                     "properties": [
                         {
-                            ...this.findDate(
-                                {altValue: "Not available", "label": "Created Date", "dataType": "STRING", "value": data.TitleReportPage.ReportDate}
-                            )
+                            ...this.findDate({
+                                altValue: "Not available",
+                                "name": "create_date",
+                                "label": "Created Date",
+                                "dataType": "STRING",
+                                "value": data.TitleReportPage.ReportDate
+                            })
                         },
                         {
                             "label": "Status",
@@ -138,21 +143,33 @@ exports.crmCardReport = async (req, res) => {
                             ...this.reportStatus(data.SentForSignatureOn, data.SignatureDate)
                         },
                         {
-                            ...this.findDate(
-                                {altValue: "Not available", value: data.SentForSignatureOn, "label": "Sent for Signing Date", "dataType": "STRING"}
-                            )
+                            ...this.findDate({
+                                altValue: "Not available",
+                                "name": "send_for_signature_on",
+                                value: data.SentForSignatureOn,
+                                "label": "Sent for Signing Date",
+                                "dataType": "STRING"
+                            })
                         },
                         {
-                            ...this.findDate(
-                                {altValue: "Not available", "label": "Signed Date", "dataType": "STRING", "value": data.SignatureDate}
-                            )
-                        }, {
+                            ...this.findDate({
+                                altValue: "Not available",
+                                "name": "sign_date",
+                                "label": "Signed Date", "dataType": "STRING",
+                                "value": data.SignatureDate,
+                                "dataType": "STRING"
+                            })
+                        }, 
+                        {
                             "label": "Value",
+                            "name": "value",
                             "dataType": "CURRENCY",
                             "value": data.TotalSignedValue || sumTiers(data.EstimateDetailsPage),
                             "currencyCode": "USD"
-                        }, {
+                        }, 
+                        {
                             "label": "Layout Used",
+                            "name": "layout_used",
                             "dataType": "STRING",
                             "value": data.ReportLayoutName
                         },
@@ -306,7 +323,7 @@ exports.syncDealToProject = async (req, res) => {
                 if (await checkPropertyObj(objectProperties, 'city')) 
                     newSumoUpdate["city"] = objectProperties.city;
 
-                const {Data} = await getProjectById(req.query.deal, user.sumoquoteAPIKEY, 'development');
+                const {Data} = await getProjectByDealId(req.query.deal, user.sumoquoteAPIKEY, 'development');
                 if (Data[0].Id) {
                     console.log(Data[0].Id);
                     console.log("New Update Data :- ", newSumoUpdate);

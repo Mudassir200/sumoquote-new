@@ -66,3 +66,26 @@ exports.getHubspotObjectData = async (id, object, token,properties="?") => {
         return {from: '(helper/hubspotAuth/getHubspotObjectData) Function Error :- ', message: error.message};
     }
 }
+
+exports.updateDealdata = async (id, token,dealData) => {
+    try {
+        console.log("Deal Data update start")
+        console.log("Hubspot Deal data update by ObjectId :- " + id)
+        const config = {
+            method: 'patch',
+            url: 'https://api.hubapi.com/crm/v3/objects/deals/' + id,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            data:JSON.stringify({"properties":dealData})
+        };
+
+        console.log(config);
+        const {data} = await axios(config);
+        console.log("Deal Data update end")
+        return data;
+    } catch (error) {
+        return {from: '(helper/hubspotAuth/updateDealdata) Function Error :- ', message: error};
+    }
+}
