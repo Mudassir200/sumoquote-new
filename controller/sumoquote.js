@@ -2,6 +2,7 @@ const axios = require('axios');
 const {getExpiry, checkPropertyObj} = require('../common-middleware');
 const {User} = require('../model/user');
 const mongoose = require('mongoose');
+const fs = require('fs');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
 const {getHubspotObjectData} = require('../helper/hubspotAuth');
 
@@ -142,9 +143,9 @@ exports.createWebhook = async (id, sumoToken) => {
     try {
         console.log("sumoquote create webhook start")
         let data = JSON.stringify([{
-                "hookEvent": "Project_Updated", //Report_Signed
+                "hookEvent": "Project_Updated", // Report_Signed
                 "hookUrl": process.env.HOST + '/sumoquote/webhook/signatory-signed/' + id,
-                "isActive":true,
+                "isActive": true,
                 "isZapHook": false
             }]);
 
@@ -173,20 +174,24 @@ exports.responseWebhook = async (req, res) => {
         let sumoquoteWebhookId = req.params.sumoquoteWebhookId;
         console.log("Response from webhook Id :- " + sumoquoteWebhookId)
         console.log("Response from webhook :- ")
-        console.log(req.body)
+        console.log(JSON.stringify(req.body))
+        console.log(JSON.stringify(req.body.InspectionPage));
+        console.log(JSON.stringify(req.body.AuthorizationPage));
+        console.log(JSON.stringify(req.body.EstimateDetailsPage));
+
         let projectId = req.body.ProjectId;
-        console.log("Project id Response from webhook :- "+ projectId)
-        console.log("Hubspot DealID id Response from webhook :- "+ req.body.ProjectIdDisplay)
+        console.log("Project id Response from webhook :- " + projectId)
+        console.log("Hubspot DealID id Response from webhook :- " + req.body.ProjectIdDisplay)
 
         const user = await User.findOne({sumoquoteWebhookId});
-        console.log("user",user);
+        console.log("user", user);
         const data = await this.getProjectById(req.body.ProjectIdDisplay, user.sumoquoteAPIKEY, 'development');
         if (data ?. message !== undefined || data ?. message) {
             return res.status(400).json(data);
         }
         console.log(data)
         console.log("sumoquote webhook response end")
-        return res.status(200).json({message:"Webhook Acceptable"});
+        return res.status(200).json({message: "Webhook Acceptable"});
     } catch (error) {
         return res.status(400).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
     }
@@ -209,13 +214,13 @@ exports.getProjectById = async (id, sumoToken, mode = "production") => {
     }
 }
 
-exports.getReportsByProjectId = async (id, sumoToken,mode = "production") => {
+exports.getReportsByProjectId = async (id, sumoToken, mode = "production") => {
     try {
         console.log("sumoquote get report by project id start")
         const config = {
             method: 'get',
             url: 'https://api.sumoquote.com/v1/Project/' + id + '/report',
-            headers: await sumoApiKeyHeader(sumoToken, mode, 'application/json'),
+            headers: await sumoApiKeyHeader(sumoToken, mode, 'application/json')
         };
 
         const {data: reports} = await axios(config);
@@ -244,39 +249,48 @@ exports.createProjectByObjectId = async (req, res) => {
                  else 
                     newSumoUpdate["customerFirstName"] = "No first name";
                 
+
                 if (await checkPropertyObj(objectProperties, 'address_line_1')) 
                     newSumoUpdate["addressLine1"] = objectProperties.address_line_1;
                  else 
                     newSumoUpdate["addressLine1"] = "Unknown";
                 
+
                 if (await checkPropertyObj(objectProperties, 'customer_last_name')) 
                     newSumoUpdate["customerLastName"] = objectProperties.customer_last_name;
                 
+
                 if (await checkPropertyObj(objectProperties, 'phone_number')) 
                     newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
                 
+
                 if (await checkPropertyObj(objectProperties, 'email')) 
                     newSumoUpdate["emailAddress"] = objectProperties.email;
                 
+
                 if (await checkPropertyObj(objectProperties, 'state')) 
                     newSumoUpdate["province"] = objectProperties.state;
                 
+
                 if (await checkPropertyObj(objectProperties, 'zip_code')) 
                     newSumoUpdate["postalCode"] = objectProperties.zip_code;
                 
+
                 if (await checkPropertyObj(objectProperties, 'city')) 
                     newSumoUpdate["city"] = objectProperties.city;
                 
+
                 if (await checkPropertyObj(objectProperties, 'address_line_2')) 
                     newSumoUpdate["addressLine2"] = objectProperties.address_line_2;
                 
+
                 if (await checkPropertyObj(objectProperties, 'companycam_project_id')) {
                     let projectIntegration = {
-                        'companyCamProjectId' : objectProperties.companycam_project_id
+                        'companyCamProjectId': objectProperties.companycam_project_id
                     };
                     newSumoUpdate["projectIntegration"] = projectIntegration;
-                }                    
-                
+                }
+
                 console.log(newSumoUpdate);
 
                 const config = {
@@ -289,9 +303,9 @@ exports.createProjectByObjectId = async (req, res) => {
                 let {data} = await axios(config);
                 console.log("Project create response :- ", data);
                 console.log("sumoquote create project by hubspot object id end")
-                if(data.Data.Id){
-                    return res.redirect(301,'https://app.sumoquote.com/project/'+objectData.id);
-                }else{
+                if (data.Data.Id) {
+                    return res.redirect(301, 'https://app.sumoquote.com/project/' + objectData.id);
+                } else {
                     return res.send('Project Not Create Properly from api please re-create project');
                 }
             } else {
