@@ -87,7 +87,7 @@ exports.crmCardReport = async (req, res) => {
             if (reports ?. message !== undefined || reports ?. message) {
                 return res.status(400).json(reports);
             }
-            let results = reports.Data.sort((a, b) => {
+            let resultsReports = reports.Data.sort(async (a, b) => {
                 if (a.SignatureDate && b.SignatureDate) {
                     return new Date(b.SignatureDate) - new Date(a.SignatureDate)
                 } else if (a.SignatureDate) {
@@ -97,9 +97,9 @@ exports.crmCardReport = async (req, res) => {
                 } else {
                     return new Date(b.TitleReportPage.ReportDate) - new Date(a.TitleReportPage.ReportDate)
                 }
-            }).map((data, i) => {
+            }).map(async (data, i) => {
                 let signedOptions = [];
-                let properties = [];
+                let properties = {};
 
                 if (data.TotalSignedValue) {
                     signedOptions.push({
@@ -123,12 +123,14 @@ exports.crmCardReport = async (req, res) => {
                     })
                 }
 
+                console.log("TotalSignedValue",data.TotalSignedValue);
+
                 return {
                     "objectId": i + 1,
                     "title": data.TitleReportPage.ReportType || "Report",
                     "properties": [
                         {
-                            ...this.findDate({
+                            ...await this.findDate({
                                 altValue: "Not available",
                                 "name": "create_date",
                                 "label": "Created Date",
@@ -140,10 +142,10 @@ exports.crmCardReport = async (req, res) => {
                             "label": "Status",
                             "dataType": "STATUS",
                             "name": "status",
-                            ...this.reportStatus(data.SentForSignatureOn, data.SignatureDate)
+                            ...await this.reportStatus(data.SentForSignatureOn, data.SignatureDate)
                         },
                         {
-                            ...this.findDate({
+                            ...await this.findDate({
                                 altValue: "Not available",
                                 "name": "send_for_signature_on",
                                 value: data.SentForSignatureOn,
@@ -152,7 +154,7 @@ exports.crmCardReport = async (req, res) => {
                             })
                         },
                         {
-                            ...this.findDate({
+                            ...await this.findDate({
                                 altValue: "Not available",
                                 "name": "sign_date",
                                 "label": "Signed Date", "dataType": "STRING",
@@ -164,7 +166,7 @@ exports.crmCardReport = async (req, res) => {
                             "label": "Value",
                             "name": "value",
                             "dataType": "CURRENCY",
-                            "value": data.TotalSignedValue || sumTiers(data.EstimateDetailsPage),
+                            "value": data.TotalSignedValue, //|| sumTiers(data.EstimateDetailsPage)
                             "currencyCode": "USD"
                         }, 
                         {
@@ -186,6 +188,8 @@ exports.crmCardReport = async (req, res) => {
                     ].concat(signedOptions)
                 }
             });
+
+            const results = await Promise.all(resultsReports)
 
             console.log("Hubspot Crm Card Report end")
             return res.json({
@@ -228,14 +232,14 @@ exports.findDate = async (data) => {
     if (!data.value || isNaN(new Date(data.value).getDate())) {
         delete data.value;
         let value = data.altValue;
-        delete data.altValue
+        delete data.altValue;
         return {
             ...data,
             value
         }
     }
-    let result = data.value.split('T', 10)
-    return {value: result[0], "label": data.label, "dataType": "DATE"}
+    let result = data.value.split('T')
+    return {value: result[0], "label": data.label,"name": data.name, "dataType": "DATE"}
 }
 
 exports.reportStatus = async (sent, signed) => {
