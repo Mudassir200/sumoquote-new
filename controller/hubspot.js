@@ -353,8 +353,7 @@ exports.downloadReport = async (req, res) => {
             headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json')
         };
     
-        const { data:{ Data } } = await axios(config)
-        // console.log(Data);
+        // const { data:{ Data } } = await axios(config)
         // const items = await getTierItemDetails(Data)
         // console.log(items);
     
@@ -366,7 +365,6 @@ exports.downloadReport = async (req, res) => {
     
         const { data: { Data : { FileUrl } } } = await axios(downloadUrlConfig)
         
-        console.log(FileUrl )
         res.render('pages/more', {
             items: [],
             downloadUrl: FileUrl
