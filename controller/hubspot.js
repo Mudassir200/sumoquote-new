@@ -99,7 +99,7 @@ exports.crmCardReport = async (req, res) => {
                 }
             }).map(async (data, i) => {
                 let signedOptions = [];
-                let properties = {};
+                // let properties = {};
 
                 if (data.TotalSignedValue) {
                     signedOptions.push({
