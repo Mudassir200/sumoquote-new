@@ -1,7 +1,7 @@
 const {User} = require('../model/user');
 const axios = require('axios');
 const Hubspot = require('hubspot');
-const {getExpiry, checkPropertyObj} = require('../common-middleware');
+const {getExpiry, checkPropertyObj, getDate} = require('../common-middleware');
 const {getProjectByDealId, getReportsByProjectId} = require('./sumoquote');
 const {getHubspotObjectData} = require('../helper/hubspotAuth');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
@@ -231,7 +231,8 @@ exports.findDate = async (data) => {
             ...data
         }
     }
-    return {value: new Date(data.value.split('T')[0]).getTime(), "label": data.label,"name": data.name, "dataType": "STRING"}
+    // let result = data.value.split('T', 10)
+    return {value: data.value.split('T')[0], "label": data.label, "dataType": "DATE"}
 }
 
 exports.reportStatus = async (sent, signed) => {
