@@ -2,7 +2,7 @@ const {User} = require('../model/user');
 const axios = require('axios');
 const Hubspot = require('hubspot');
 const {getExpiry, checkPropertyObj, getDate} = require('../common-middleware');
-const {getProjectByDealId, getReportsByProjectId} = require('./sumoquote');
+const {getProjectByDealId, getReportsByProjectId,getTierItemDetails} = require('./sumoquote');
 const {getHubspotObjectData} = require('../helper/hubspotAuth');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
 const HOST = process.env.HOST;
@@ -345,9 +345,34 @@ exports.syncDealToProject = async (req, res) => {
 
 exports.downloadReport = async (req, res) => {
     try {
-        console.log("Hubspot download report start")
+        console.log("Hubspot download report start")  
+        const user = req.user;  
+        let config = {
+            method: 'get',
+            url: `https://api.sumoquote.com/v1/Project/${req.query.projectId}/Report/${req.query.reportId}`,
+            headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json')
+        };
+    
+        const { data:{ Data } } = await axios(config)
+        // console.log(Data);
+        // const items = await getTierItemDetails(Data)
+        // console.log(items);
+    
+        let downloadUrlConfig = {
+            method: 'get',
+            url: `https://api.sumoquote.com/v1/Project/${req.query.projectId}/Report/${req.query.reportId}/download`,
+            headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json')
+        };
+    
+        const { data: { Data : { FileUrl } } } = await axios(downloadUrlConfig)
+        
+        console.log(FileUrl )
+        res.render('pages/more', {
+            items: [],
+            downloadUrl: FileUrl
+        });
         console.log("Hubspot download report end")
     } catch (error) {
-        return res.status(400).json({from: '(controller/hubspot/syncDealToProject) Function Error :- ', message: error.message});
+        return res.status(400).json({from: '(controller/hubspot/downloadReport) Function Error :- ', message: error.message});
     }
 }

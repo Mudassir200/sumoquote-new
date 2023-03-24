@@ -368,3 +368,63 @@ exports.createProjectByObjectId = async (req, res) => {
         return res.status(400).json({from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error.message});
     }
 }
+
+
+exports.getObjectDetail = async (obj) => {
+    return {
+        name: obj.Description,
+        'price': obj.Price,
+        "quantity": obj.Quantity
+    }
+}
+
+exports.getAuthItemDetails = async (acc, sect) => {
+    return [...acc, ...sect.AuthorizationItems.reduce(async(acc, item) => {
+        if (item.Selected) {
+            return [...acc, await this.getObjectDetail(item)]
+        }
+        return acc
+    }, [])]
+}
+
+exports.getAuthSectDetails = async (authSect) =>{
+    if (!authSect) return 0;
+    return authSect.reduce(async (item) => {  await getAuthItemDetails, []})
+}
+
+exports.getExtimateItemsDetails = async(details, item) => {
+    if (item.Quantity * item.Price) {
+        return [...details, await this.getObjectDetail(item)]
+    }
+    return details
+}
+
+exports.getEstimateSectionsDetails = async (details, section) => {
+    let sectionDetails = section.EstimateItems.reduce(async (item) => {await this.getExtimateItemsDetails(details,item), []})
+    return [...details, ...sectionDetails]
+}
+
+exports.getTierDetails = async (tier) => {
+    try {
+        if (!tier || !tier.Selected) {
+            return []
+        }
+        console.log("tier",tier);
+        return tier.EstimateSections.reduce(async (item) => {await this.getEstimateSectionsDetails(tier,item), []})
+    } catch (error) {
+        return {from: '(controller/sumoquote/getTierDetails) Function Error :- ', message: error.message};
+    }
+}
+
+exports.getTierItemDetails = async(a) => {
+    try {
+        const data = [
+            ...this.getTierDetails(a.EstimateDetailsPage.Tier1),
+            ...this.getTierDetails(a.EstimateDetailsPage.Tier2),
+            ...this.getTierDetails(a.EstimateDetailsPage.Tier3),
+            ...this.getAuthSectDetails(a.AuthorizationPage.AuthorizationSections)]
+        return data
+    } catch (error) {
+        return {from: '(controller/sumoquote/getTierItemDetails) Function Error :- ', message: error};
+    }
+}
