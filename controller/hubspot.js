@@ -131,7 +131,6 @@ exports.crmCardReport = async (req, res) => {
                     "properties": [
                         {
                             ...await this.findDate({
-                                "name": "create_date",
                                 "label": "Created Date",
                                 "dataType": "STRING",
                                 "value": data.TitleReportPage.ReportDate
@@ -145,7 +144,6 @@ exports.crmCardReport = async (req, res) => {
                         },
                         {
                             ...await this.findDate({
-                                "name": "send_for_signature_on",
                                 value: data.SentForSignatureOn,
                                 "label": "Sent for Signing Date",
                                 "dataType": "STRING"
@@ -153,7 +151,6 @@ exports.crmCardReport = async (req, res) => {
                         },
                         {
                             ...await this.findDate({
-                                "name": "sign_date",
                                 "label": "Signed Date", "dataType": "STRING",
                                 "value": data.SignatureDate,
                                 "dataType": "STRING"
@@ -168,7 +165,6 @@ exports.crmCardReport = async (req, res) => {
                         }, 
                         {
                             "label": "Layout Used",
-                            "name": "layout_used",
                             "dataType": "STRING",
                             "value": data.ReportLayoutName
                         },
