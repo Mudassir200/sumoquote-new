@@ -131,7 +131,6 @@ exports.crmCardReport = async (req, res) => {
                     "properties": [
                         {
                             ...await this.findDate({
-                                altValue: "Not available",
                                 "name": "create_date",
                                 "label": "Created Date",
                                 "dataType": "STRING",
@@ -146,7 +145,6 @@ exports.crmCardReport = async (req, res) => {
                         },
                         {
                             ...await this.findDate({
-                                altValue: "Not available",
                                 "name": "send_for_signature_on",
                                 value: data.SentForSignatureOn,
                                 "label": "Sent for Signing Date",
@@ -155,7 +153,6 @@ exports.crmCardReport = async (req, res) => {
                         },
                         {
                             ...await this.findDate({
-                                altValue: "Not available",
                                 "name": "sign_date",
                                 "label": "Signed Date", "dataType": "STRING",
                                 "value": data.SignatureDate,
@@ -230,15 +227,11 @@ exports.crmCardReport = async (req, res) => {
 
 exports.findDate = async (data) => {
     if (!data.value || isNaN(new Date(data.value).getDate())) {
-        delete data.value;
-        let value = data.altValue;
-        delete data.altValue;
         return {
-            ...data,
-            value
+            ...data
         }
     }
-    return {value: new Date(data.value.split('T')[0]).getTime(), "label": data.label,"name": data.name, "dataType": "DATE"}
+    return {value: new Date(data.value.split('T')[0]).getTime(), "label": data.label,"name": data.name, "dataType": "STRING"}
 }
 
 exports.reportStatus = async (sent, signed) => {
@@ -347,6 +340,16 @@ exports.syncDealToProject = async (req, res) => {
             return res.send("Deal Id Not Found!");
         }
         console.log("Hubspot syncronize deal to project end")
+    } catch (error) {
+        return res.status(400).json({from: '(controller/hubspot/syncDealToProject) Function Error :- ', message: error.message});
+    }
+}
+
+
+exports.downloadReport = async (req, res) => {
+    try {
+        console.log("Hubspot download report start")
+        console.log("Hubspot download report end")
     } catch (error) {
         return res.status(400).json({from: '(controller/hubspot/syncDealToProject) Function Error :- ', message: error.message});
     }
