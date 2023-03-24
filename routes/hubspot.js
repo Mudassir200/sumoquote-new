@@ -3,6 +3,7 @@ const { getSumoquoteAccessToken } = require( '../helper/sumoquoteAuth');
 const {connect, callback, crmCardReport, setting, syncDealToProject, downloadReport} = require('../controller/hubspot');
 const {requireConnectCrmCard, requiredAuth} = require('../common-middleware');
 const {getHubspotAccessToken} = require('../helper/hubspotAuth');
+const { downloadPdfReport } = require('../controller/sumoquote');
 
 router.get('/connect', connect);
 router.get('/callback', callback);

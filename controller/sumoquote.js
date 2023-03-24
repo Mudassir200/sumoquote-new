@@ -313,8 +313,12 @@ exports.createProjectByObjectId = async (req, res) => {
                     newSumoUpdate["phoneNumber"] = objectProperties.phone_number;
                 
 
-                if (await checkPropertyObj(objectProperties, 'email')) 
-                    newSumoUpdate["emailAddress"] = objectProperties.email;
+                if (await checkPropertyObj(objectProperties, 'email')) {
+                    var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+                    if(objectProperties.email.length < 254 && emailRegex.test(objectProperties.email))
+                        newSumoUpdate["emailAddress"] = objectProperties.email;
+                }
+                    
                 
 
                 if (await checkPropertyObj(objectProperties, 'state')) 
