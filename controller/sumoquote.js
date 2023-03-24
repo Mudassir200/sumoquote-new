@@ -318,8 +318,6 @@ exports.createProjectByObjectId = async (req, res) => {
                     if(objectProperties.email.length < 254 && emailRegex.test(objectProperties.email))
                         newSumoUpdate["emailAddress"] = objectProperties.email;
                 }
-                    
-                
 
                 if (await checkPropertyObj(objectProperties, 'state')) 
                     newSumoUpdate["province"] = objectProperties.state;

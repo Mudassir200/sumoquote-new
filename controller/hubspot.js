@@ -307,8 +307,11 @@ exports.syncDealToProject = async (req, res) => {
                 if (await checkPropertyObj(objectProperties, 'address_line_2')) 
                     newSumoUpdate["addressLine2"] = objectProperties.address_line_2;
 
-                if (await checkPropertyObj(objectProperties, 'email')) 
-                    newSumoUpdate["emailAddress"] = objectProperties.email;
+                if (await checkPropertyObj(objectProperties, 'email')) {
+                    var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+                    if(objectProperties.email.length < 254 && emailRegex.test(objectProperties.email))
+                        newSumoUpdate["emailAddress"] = objectProperties.email;
+                }
                 
                 if (await checkPropertyObj(objectProperties, 'zip_code')) 
                     newSumoUpdate["postalCode"] = objectProperties.zip_code;
