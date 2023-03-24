@@ -238,8 +238,7 @@ exports.findDate = async (data) => {
             value
         }
     }
-    let result = data.value.split('T')
-    return {value: result[0], "label": data.label,"name": data.name, "dataType": "DATE"}
+    return {value: new Date(data.value.split('T')[0]).getTime(), "label": data.label,"name": data.name, "dataType": "DATE"}
 }
 
 exports.reportStatus = async (sent, signed) => {
