@@ -99,8 +99,6 @@ exports.crmCardReport = async (req, res) => {
                 }
             }).map(async (data, i) => {
                 let signedOptions = [];
-                // let properties = {};
-
                 if (data.TotalSignedValue) {
                     signedOptions.push({
                         "type": "IFRAME",
@@ -122,8 +120,6 @@ exports.crmCardReport = async (req, res) => {
                         "label": "Remind?"
                     })
                 }
-
-                console.log("TotalSignedValue",data.TotalSignedValue);
 
                 return {
                     "objectId": i + 1,
@@ -160,7 +156,7 @@ exports.crmCardReport = async (req, res) => {
                             "label": "Value",
                             "name": "value",
                             "dataType": "CURRENCY",
-                            "value": data.TotalSignedValue, //|| sumTiers(data.EstimateDetailsPage)
+                            "value": data.TotalSignedValue || 00, //|| sumTiers(data.EstimateDetailsPage)
                             "currencyCode": "USD"
                         }, 
                         {
