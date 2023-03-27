@@ -161,7 +161,7 @@ exports.crmCardReport = async (req, res) => {
                         }, 
                         {
                             "label": "Layout Used",
-                            "dataType": "STRING",
+                            "dataType": "STRING", 
                             "value": data.ReportLayoutName
                         },
                     ],
