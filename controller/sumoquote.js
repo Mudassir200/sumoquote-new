@@ -4,7 +4,7 @@ const {User} = require('../model/user');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
-const {getHubspotObjectData,updateDealdata, getHubspotOwner} = require('../helper/hubspotAuth');
+const {getHubspotObjectData,updateDealdata, getHubspotOwner, createLineItems} = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -178,11 +178,7 @@ exports.responseWebhook = async (req, res) => {
         let SignatureDate = req.body.SignatureDate;
         let ProjectIdDisplay = req.body.ProjectIdDisplay;
         console.log("Project id " + projectId+ " And Deal id " + ProjectIdDisplay)
-        // console.log("Response from webhook :- ")
-        // console.log(JSON.stringify(req.body))
-        // console.log(JSON.stringify(req.body.InspectionPage));
-        // console.log(JSON.stringify(req.body.AuthorizationPage));
-        // console.log(JSON.stringify(req.body.EstimateDetailsPage));
+        // console.log("Response from webhook :- ",JSON.stringify(req.body))
 
         const user = req.user;
         console.log(user);
@@ -222,12 +218,12 @@ exports.responseWebhook = async (req, res) => {
 
         const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
         console.log("sumoquote deal update :- ",response)
+
+        const lineItems = await this.getTierItemDetails(req.body);
+        // console.log(lineItems);
+        let lineItemRes = await createLineItems(ProjectIdDisplay,user.hubspotAccessToken,lineItems)
         console.log("sumoquote webhook response end")
-
-        //const lineItems = await this.getTierItemDetails(req.body);
-
-
-        return res.status(200).json({message: "Webhook Acceptable"});
+        return res.status(200).json({message: "Webhook Acceptable",lineItemRes});
     } catch (error) {
         return res.status(200).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
     }
@@ -375,7 +371,6 @@ exports.createProjectByObjectId = async (req, res) => {
         } else {
             return res.send('Deal Id Not found');
         }
-        return res.send('Someting Wrong in Create Project!.Please re-create project');
     } catch (error) {
         return res.status(400).json({from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error});
     }
@@ -384,39 +379,30 @@ exports.createProjectByObjectId = async (req, res) => {
 
 exports.getObjectDetail = async (obj) => {
     return {
-        name: obj.Description,
+        name: obj.PriceDetailName,  //Description
+        'description': obj.Description,  //Description
         'price': obj.Price,
         "quantity": obj.Quantity
     }
 }
 
-exports.getAuthItemDetails = async (acc, sect) => {
-    return [...acc, ...sect.AuthorizationItems.reduce(async(acc, item) => {
-        if (item.Selected) {
-            return [...acc, await this.getObjectDetail(item)]
-        }
-        return acc
-    }, [])]
-}
-
 exports.getAuthSectDetails = async (authSect) =>{
-    if (!authSect) return 0;
-    return authSect.reduce(async (item) => {  await getAuthItemDetails, []})
-}
-
-exports.getExtimateItemsDetails = async(details, item) => {
-    console.log("item",item);
-    if (item.Quantity * item.Price) {
-        return [...details, await this.getObjectDetail(item)]
+    try {
+        if (!authSect) return [];
+        let AuthDetails = [];
+        await authSect.map(async (authSection) => { 
+            await authSection.AuthorizationItems.map(async (item) => { 
+                if (!item || !item.Selected) {
+                    return []
+                }
+                let lineItem = await this.getObjectDetail(item)
+                AuthDetails.push(lineItem);
+            })
+        })
+        return AuthDetails;
+    } catch (error) {
+        return {from: '(controller/sumoquote/getAuthSectDetails) Function Error :- ', message: error.message};
     }
-    else
-    return details
-}
-
-exports.getEstimateSectionsDetails = async (details, section) => {
-    let sectionDetails = section.EstimateItems.reduce(await this.getExtimateItemsDetails, [])
-    console.log("sectionDetails",sectionDetails);
-    return [...details, ...sectionDetails]
 }
 
 exports.getTierDetails = async (tier) => {
@@ -424,16 +410,16 @@ exports.getTierDetails = async (tier) => {
         if (!tier || !tier.Selected) {
             return []
         }
-        // console.log("tier",tier);
-        let tireDetails = await tier.EstimateSections.map(async (EstimateSections) => {
-            let tireSectionDetails = await EstimateSections.EstimateItems.map(async (item) => {
+        const tireDetails = [];
+        await tier.EstimateSections.map(async (EstimateSections) => {
+            await EstimateSections.EstimateItems.map(async (item) => {
                 if (item.Quantity * item.Price) {
-                    let itemData = await this.getObjectDetail(item)
+                    let lineItem = await this.getObjectDetail(item)
+                    tireDetails.push(lineItem);
                 }
             })
         })
-        console.log("tier",tireDetails);
-
+        return tireDetails;
     } catch (error) {
         return {from: '(controller/sumoquote/getTierDetails) Function Error :- ', message: error.message};
     }
@@ -447,7 +433,7 @@ exports.getTierItemDetails = async(a) => {
             ...await this.getTierDetails(a.EstimateDetailsPage.Tier3),
             ...await this.getAuthSectDetails(a.AuthorizationPage.AuthorizationSections)
         ]
-        // return data
+        return data
     } catch (error) {
         return {from: '(controller/sumoquote/getTierItemDetails) Function Error :- ', message: error};
     }

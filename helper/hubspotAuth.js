@@ -109,3 +109,62 @@ exports.updateDealdata = async (id, token,dealData) => {
         return {from: '(helper/hubspotAuth/updateDealdata) Function Error :- ', message: error};
     }
 }
+
+exports.data = [
+    { name: 'Belmont Series Windows', price: 54.17, quantity: 2 },
+    {
+      name: 'Belmont Standard Exterior Coated Colors',
+      price: 204.77,
+      quantity: 3
+    },
+    {
+      name: 'Belmont Custom Exterior Colors',
+      price: 1257.37,
+      quantity: 2
+    },
+    { name: 'Belmont Extruded Full Screen', price: 25.15, quantity: 1 },
+    { name: 'Belmont White Factory Mull', price: 46.7, quantity: 1 },
+    { name: 'Belmont Black Factory Mull', price: 56.05, quantity: 1 }
+  ];
+
+exports.createLineItems = async (id,token, lineItemData) => {
+    try {
+        console.log("Create Line Items and assosiate deal start")
+        // console.log(data);
+        let result = [];
+        lineItemData.map(async (item) => {
+           let lineItem = {
+                "properties" : {...item},
+                "associations" : [{
+                    "to": {
+                        "id": id
+                    },
+                    "types": [
+                        {
+                          "associationCategory": "HUBSPOT_DEFINED",
+                          "associationTypeId": 20
+                        }
+                    ]
+                }]
+           }
+           result.push(lineItem);
+        })
+        // console.log(JSON.stringify(result));
+        const config = {
+            method: 'post',
+            url: 'https://api.hubapi.com/crm/v3/objects/line_items/batch/create',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            data:{"inputs":[...result]}
+        };
+        
+        const {data} = await axios(config);
+        console.log("Create Line Items and assosiate deal end")
+        return data;
+    } catch (error) {
+        console.log(error);
+        return {from: '(helper/hubspotAuth/createLineItems) Function Error :- ', message: error};
+    }
+}
