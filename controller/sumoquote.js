@@ -4,7 +4,7 @@ const {User} = require('../model/user');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
-const {getHubspotObjectData,updateDealdata} = require('../helper/hubspotAuth');
+const {getHubspotObjectData,updateDealdata, getHubspotOwner} = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -310,7 +310,7 @@ exports.createProjectByObjectId = async (req, res) => {
                 
 
                 if (await checkPropertyObj(objectProperties, 'outside_sales__os_')) {
-                    let {properties:salesPerson} = await getHubspotObjectData(objectProperties.outside_sales__os_, 'contact', user.hubspotAccessToken);
+                    let salesPerson = await getHubspotOwner(objectProperties.outside_sales__os_, user.hubspotAccessToken);
                     salesPerson?.email ? newSumoUpdate["salespersonEmail"] = salesPerson.email : "";
                 }
 

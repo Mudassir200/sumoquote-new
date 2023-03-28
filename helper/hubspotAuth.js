@@ -67,6 +67,26 @@ exports.getHubspotObjectData = async (id, object, token,properties="?") => {
     }
 }
 
+exports.getHubspotOwner = async (id, token) => {
+    try {
+        console.log("Hubspot get owner data start")
+        const config = {
+            method: 'get',
+            url: 'https://api.hubapi.com/crm/v3/owners/'+ id ,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+
+        const {data} = await axios(config);
+        console.log("Hubspot get owner data end")
+        return data;
+    } catch (error) {
+        return {from: '(helper/hubspotAuth/getHubspotOwner) Function Error :- ', message: error};
+    }
+}
+
 exports.updateDealdata = async (id, token,dealData) => {
     try {
         console.log("Deal Data update start")
