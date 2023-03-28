@@ -223,6 +223,10 @@ exports.responseWebhook = async (req, res) => {
         const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
         console.log("sumoquote deal update :- ",response)
         console.log("sumoquote webhook response end")
+
+        //const lineItems = await this.getTierItemDetails(req.body);
+
+
         return res.status(200).json({message: "Webhook Acceptable"});
     } catch (error) {
         return res.status(200).json({from: '(controller/sumoquote/responseWebhook) Function Error :- ', message: error.message});
@@ -285,7 +289,7 @@ exports.createProjectByObjectId = async (req, res) => {
         console.log("sumoquote create project by hubspot object id start")
         const user = req.user;
         if (req.query.deal) {
-            let properties = "?properties=dealname,hs_object_id,companycam_project_id,customer_first_name,customer_last_name,email,phone_number,address_line_1,address_line_2,state,zip_code,city"
+            let properties = "?properties=dealname,hs_object_id,companycam_project_id,customer_first_name,customer_last_name,email,outside_sales__os_,phone_number,address_line_1,address_line_2,state,zip_code,city"
             let objectData = await getHubspotObjectData(req.query.deal, 'deal', user.hubspotAccessToken, properties);
             if (objectData.id) {
                 let newSumoUpdate = {};
@@ -295,15 +299,21 @@ exports.createProjectByObjectId = async (req, res) => {
                 console.log(objectProperties);
                 if (await checkPropertyObj(objectProperties, 'customer_first_name')) 
                     newSumoUpdate["customerFirstName"] = objectProperties.customer_first_name;
-                 else 
+                else 
                     newSumoUpdate["customerFirstName"] = "No first name";
+                    
                 
-
                 if (await checkPropertyObj(objectProperties, 'address_line_1')) 
                     newSumoUpdate["addressLine1"] = objectProperties.address_line_1;
-                 else 
+                else 
                     newSumoUpdate["addressLine1"] = "Unknown";
                 
+
+                if (await checkPropertyObj(objectProperties, 'outside_sales__os_')) {
+                    let {properties:salesPerson} = await getHubspotObjectData(objectProperties.outside_sales__os_, 'contact', user.hubspotAccessToken);
+                    salesPerson?.email ? newSumoUpdate["salespersonEmail"] = salesPerson.email : "";
+                }
+
 
                 if (await checkPropertyObj(objectProperties, 'customer_last_name')) 
                     newSumoUpdate["customerLastName"] = objectProperties.customer_last_name;
@@ -347,7 +357,7 @@ exports.createProjectByObjectId = async (req, res) => {
                 const config = {
                     method: 'post',
                     url: 'https://api.sumoquote.com/v1/Project/',
-                    headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json'),
+                    headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/*+json'),
                     data: newSumoUpdate
                 };
 
@@ -367,7 +377,7 @@ exports.createProjectByObjectId = async (req, res) => {
         }
         return res.send('Someting Wrong in Create Project!.Please re-create project');
     } catch (error) {
-        return res.status(400).json({from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error.message});
+        return res.status(400).json({from: '(controller/sumoquote/createProjectByObjectId) Function Error :- ', message: error});
     }
 }
 
@@ -395,14 +405,17 @@ exports.getAuthSectDetails = async (authSect) =>{
 }
 
 exports.getExtimateItemsDetails = async(details, item) => {
+    console.log("item",item);
     if (item.Quantity * item.Price) {
         return [...details, await this.getObjectDetail(item)]
     }
+    else
     return details
 }
 
 exports.getEstimateSectionsDetails = async (details, section) => {
-    let sectionDetails = section.EstimateItems.reduce(async (item) => {await this.getExtimateItemsDetails(details,item), []})
+    let sectionDetails = section.EstimateItems.reduce(await this.getExtimateItemsDetails, [])
+    console.log("sectionDetails",sectionDetails);
     return [...details, ...sectionDetails]
 }
 
@@ -411,8 +424,16 @@ exports.getTierDetails = async (tier) => {
         if (!tier || !tier.Selected) {
             return []
         }
-        console.log("tier",tier);
-        return tier.EstimateSections.reduce(async (item) => {await this.getEstimateSectionsDetails(tier,item), []})
+        // console.log("tier",tier);
+        let tireDetails = await tier.EstimateSections.map(async (EstimateSections) => {
+            let tireSectionDetails = await EstimateSections.EstimateItems.map(async (item) => {
+                if (item.Quantity * item.Price) {
+                    let itemData = await this.getObjectDetail(item)
+                }
+            })
+        })
+        console.log("tier",tireDetails);
+
     } catch (error) {
         return {from: '(controller/sumoquote/getTierDetails) Function Error :- ', message: error.message};
     }
@@ -421,11 +442,12 @@ exports.getTierDetails = async (tier) => {
 exports.getTierItemDetails = async(a) => {
     try {
         const data = [
-            ...this.getTierDetails(a.EstimateDetailsPage.Tier1),
-            ...this.getTierDetails(a.EstimateDetailsPage.Tier2),
-            ...this.getTierDetails(a.EstimateDetailsPage.Tier3),
-            ...this.getAuthSectDetails(a.AuthorizationPage.AuthorizationSections)]
-        return data
+            ...await this.getTierDetails(a.EstimateDetailsPage.Tier1),
+            ...await this.getTierDetails(a.EstimateDetailsPage.Tier2),
+            ...await this.getTierDetails(a.EstimateDetailsPage.Tier3),
+            ...await this.getAuthSectDetails(a.AuthorizationPage.AuthorizationSections)
+        ]
+        // return data
     } catch (error) {
         return {from: '(controller/sumoquote/getTierItemDetails) Function Error :- ', message: error};
     }

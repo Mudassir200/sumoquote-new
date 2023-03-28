@@ -171,7 +171,7 @@ exports.crmCardReport = async (req, res) => {
                             "width": 890,
                             "height": 748,
                             "uri": 'https://app.sumoquote.com/report/' + associatedObjectId + '/' + data.ReportId,
-                            "label": "View",
+                            "label": "Edit/View",
                             "associatedObjectProperties": []
                         },
                     ].concat(signedOptions)
