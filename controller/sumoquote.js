@@ -382,6 +382,7 @@ exports.getObjectDetail = async (obj) => {
         name: obj.PriceDetailName,  //Description
         'description': obj.Description,  //Description
         'price': obj.Price,
+        'total': parseFloat(obj.Price * obj.Quantity).toFixed(2),
         "quantity": obj.Quantity
     }
 }

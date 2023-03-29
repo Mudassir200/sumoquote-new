@@ -105,14 +105,16 @@
             <tr>
               <th>ITEM</th>
               <th>QUANTITY</th>
-              <th>PRICE($)</th>
+              <th>UNIT PRICE($)</th>
+              <th>TOTAL PRICE($)</th>
             </tr>
           </thead>
           <tbody>
             <% for(var i=0; i < items.length; i++) { %>
               <tr>
-                <td>
-                  <%= items[i].name %>
+                <td align="left">
+                  <strong>Name :- </strong><%= items[i].name %><br>
+                  <strong>Description :- </strong><%= items[i].description %>
                 </td>
                 <td>
                   <%= items[i].quantity %>
@@ -120,8 +122,21 @@
                 <td>
                   <%= items[i].price %>
                 </td>
+                <td>
+                  <%= items[i].total %>
+                </td>
               </tr>
               <% } %>
+              <tr>
+                <td colspan="2" align="right">                 
+                </td>
+                <td>
+                  <strong>Total</strong>                  
+                </td>
+                <td >
+                  <%= total %>
+                </td>
+              </tr>
           </tbody>
         </table>
       </div>

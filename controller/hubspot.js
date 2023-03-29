@@ -352,10 +352,15 @@ exports.downloadReport = async (req, res) => {
             headers: await sumoApiKeyHeader(user.sumoquoteAPIKEY, 'development', 'application/json')
         };
     
-        // const { data:{ Data } } = await axios(config)
-        // const items = await getTierItemDetails(Data)
+        const { data:{ Data } } = await axios(config)
+        const items = await getTierItemDetails(Data)
         // console.log(items);
     
+        let total = 0;
+        await items.map(async (item) => {
+            total += item.price * item.quantity
+        })
+
         let downloadUrlConfig = {
             method: 'get',
             url: `https://api.sumoquote.com/v1/Project/${req.query.projectId}/Report/${req.query.reportId}/download`,
@@ -365,7 +370,8 @@ exports.downloadReport = async (req, res) => {
         const { data: { Data : { FileUrl } } } = await axios(downloadUrlConfig)
         
         res.render('pages/more', {
-            items: [],
+            items: items,
+            total,
             downloadUrl: FileUrl
         });
         console.log("Hubspot download report end")
