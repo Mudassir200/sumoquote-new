@@ -214,6 +214,12 @@ exports.responseWebhook = async (req, res) => {
             dealUpdateProperties["product_selection___apple_pc"] =  req.body.AuthorizationPage.ProductSelections[2].Selection;
         }
 
+        let reportUrl = await this.reportUrl(projectId,req.body.Id,user.sumoquoteAPIKEY)
+
+        if (reportUrl && !reportUrl.message && !reportUrl.from) {
+            dealUpdateProperties["sumo_report_pdf"] =  reportUrl;
+        }
+
         console.log("properties",dealUpdateProperties)
 
         const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
@@ -437,5 +443,21 @@ exports.getTierItemDetails = async(a) => {
         return data
     } catch (error) {
         return {from: '(controller/sumoquote/getTierItemDetails) Function Error :- ', message: error};
+    }
+}
+
+exports.reportUrl = async (projectId, reportId,token) => {
+    try {
+        let downloadUrlConfig = {
+            method: 'get',
+            url: `https://api.sumoquote.com/v1/Project/${projectId}/Report/${reportId}/download`,
+            headers: await sumoApiKeyHeader(token, 'development', 'application/json')
+        };
+
+        const { data: { Data : { FileUrl } } } = await axios(downloadUrlConfig)
+        return FileUrl
+    } catch (error) {
+        console.log(error);
+        return {from: '(controller/sumoquote/reportUrl) Function Error :- ', message: error};
     }
 }
