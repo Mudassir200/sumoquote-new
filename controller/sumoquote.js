@@ -367,6 +367,9 @@ exports.createProjectByObjectId = async (req, res) => {
                 console.log("Project create response :- ", data);
                 console.log("sumoquote create project by hubspot object id end")
                 if (data.Data.Id) {
+                    res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+                    res.header("Pragma", "no-cache");
+                    res.header("Expires", 0);
                     return res.redirect(301, 'https://app.sumoquote.com/project/' + objectData.id);
                 } else {
                     return res.send('Project Not Create Properly from api please re-create project');
