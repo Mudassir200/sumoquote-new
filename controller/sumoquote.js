@@ -236,7 +236,6 @@ exports.responseWebhook = async (req, res) => {
         if(user.createQuote){
             await createQuoteById(ProjectIdDisplay,user,lineItemRes,req.body.TitleReportPage.ReportType)
         }
-
         console.log("sumoquote webhook response end")
         return res.status(200).json({message: "Webhook Acceptable",lineItemRes});
     } catch (error) {

@@ -260,7 +260,8 @@ exports.createQuoteById = async (id,user, lineItemRes,title="New Quote") => {
         let templateId = user.quoteTemplateId;
         let quoteData = { "properties" :{
             hs_title: title,
-            hs_expiration_date: "2023-12-12"
+            hs_expiration_date: "2023-12-12",
+            "hs_status":"DRAFT"
         }};
         
         let assosiateDealToContact = await this.assosiateDealToContact(id,user.hubspotAccessToken);
@@ -284,87 +285,54 @@ exports.createQuoteById = async (id,user, lineItemRes,title="New Quote") => {
             })         
         }
 
-        if(lineItems.length > 0 && templateId){
+        if(lineItems.length > 0 && templateId && quoteListData.length > 0 && id){
             // Deal Assosiation Start
-            let dealAssosiationlabel = await this.assosiationLabel('quotes',quoteListData[0].id,'deals',user.hubspotAccessToken);
-            // console.log('Quote to deal Assosiation label',JSON.stringify(dealAssosiationlabel));
-            if (dealAssosiationlabel.length < 1) {
-                if (assosiateDealToContact.length > 0) {
-                    console.log('Assosiation quote to deal');
-                    await this.createAssosiationLabel('quotes',quoteListData[0].id,'deals',id,user.hubspotAccessToken)
-                }
-            }
-
-            // let dealAssosiationID = await this.associationTypeId('quotes',quoteListData[0].id,'deals',id,user.hubspotAccessToken);
+            let dealAssosiationID = await this.associationTypeId('quotes',quoteListData[0].id,'deals',id,user.hubspotAccessToken);
             // console.log('dealAssosiationID',dealAssosiationID);
-
             quoteAssosiation.push({
                 "to": { "id": id },
                 "types": [{
                     "associationCategory": "HUBSPOT_DEFINED",
-                    "associationTypeId": 64
+                    "associationTypeId": dealAssosiationID
                 }]
             });
 
-
             // Contact Assosiation Start
-            let contactAssosiationlabel = await this.assosiationLabel('quotes',quoteListData[0].id,'contacts',user.hubspotAccessToken);
-            // console.log('Quote to contact Assosiation label',JSON.stringify(contactAssosiationlabel));
-            if (dealAssosiationlabel.length < 1) {
-                if (quoteListData.length > 0 && assosiateDealToContact.length > 0) {
-                    console.log('Assosiation quote to contact');
-                    await this.createAssosiationLabel('quotes',quoteListData[0].id,'deals',assosiateDealToContact[0].id,user.hubspotAccessToken)
-                }
-            }
             if (assosiateDealToContact.length > 0) {
-                assosiateDealToContact.map(async (contact) =>{         //contact assosiate
+                let contactAssosiationID = await this.associationTypeId('quotes',quoteListData[0].id,'contacts',assosiateDealToContact[0].id,user.hubspotAccessToken);
+                // console.log('contactAssosiationID',contactAssosiationID);
+                assosiateDealToContact.map( async (contact) => { 
                     let ass = {
                         "to": { "id": contact.id },
                         "types": [{
                             "associationCategory": "HUBSPOT_DEFINED",
-                            "associationTypeId": 69
+                            "associationTypeId": contactAssosiationID
                         }]
                       };
                       quoteAssosiation.push(ass);
                 })
             }
 
-
-
             // Quote Template Assosiation Start
-            let templateAssosiationlabel = await this.assosiationLabel('quotes',quoteListData[0].id,'quote_template',user.hubspotAccessToken);
-            // console.log('Quote to quote template Assosiation label',JSON.stringify(templateAssosiationlabel));
-            if (templateAssosiationlabel.length < 1) {
-                if (quoteTemplateListData.length > 0 && templateId) {
-                    console.log('Assosiation quote to quote_template');
-                    await this.createAssosiationLabel('quotes',quoteListData[0].id,'quote_template',templateId,user.hubspotAccessToken)
-                }
-            }
+            let templateAssosiationID = await this.associationTypeId('quotes',quoteListData[0].id,'quote_template',templateId,user.hubspotAccessToken);
+            // console.log('templateAssosiationID',templateAssosiationID);
             quoteAssosiation.push({
                 "to": { "id": templateId },   
                 "types": [{
                     "associationCategory": "HUBSPOT_DEFINED",
-                    "associationTypeId": 286
+                    "associationTypeId": templateAssosiationID
                 }]
             })
 
             // Line Item Assosiation Start 
-            let lineItemAssosiationlabel = await this.assosiationLabel('quotes',quoteListData[0].id,'line_items',user.hubspotAccessToken);
-            // console.log('Quote to line items Assosiation label',JSON.stringify(lineItemAssosiationlabel));
-            if (lineItemAssosiationlabel.length < 1) {
-                if (quoteListData.length > 0 && lineItems.length > 0) {
-                    console.log('Assosiation quote to line items');
-                    await this.createAssosiationLabel('quotes',quoteListData[0].id,'line_items',lineItems[0].id,user.hubspotAccessToken)
-                }
-            }
+            let lineItemAssosiationID = await this.associationTypeId('quotes',quoteListData[0].id,'line_items',lineItems[0].id,user.hubspotAccessToken);
+            // console.log('lineItemAssosiationID',lineItemAssosiationID);
             lineItems.map(async (lineItem) =>{
                 let ass = {
-                    "to": {
-                      "id": lineItem.id
-                    },
+                    "to": { "id": lineItem.id },
                     "types": [{
                         "associationCategory": "HUBSPOT_DEFINED",
-                        "associationTypeId": 67
+                        "associationTypeId": lineItemAssosiationID
                     }]
                   };
                   quoteAssosiation.push(ass);
@@ -383,23 +351,8 @@ exports.createQuoteById = async (id,user, lineItemRes,title="New Quote") => {
                 data:quoteData,
             };
             const {data:quoteRes} = await axios(quoteConfig);
-            // console.log('quote res',quoteRes);
+            console.log('quote res',quoteRes);
 
-            const quoteUpdateConfig = {
-                method: 'PATCH',
-                url: 'https://api.hubapi.com/crm/v3/objects/quotes/'+quoteRes.id,
-                headers: {
-                    Authorization: `Bearer ${user.hubspotAccessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                data:JSON.stringify({
-                    "properties":{
-                        "hs_status":"DRAFT"
-                    }
-                }),
-            };
-            const {data:quoteUpdateRes} = await axios(quoteUpdateConfig);
-            console.log('quote update res',quoteUpdateRes);
         }else{
             console.log({error: true, message: "Template Not Found or Line Items Note Found"});
         }
@@ -409,7 +362,6 @@ exports.createQuoteById = async (id,user, lineItemRes,title="New Quote") => {
         return {from: '(helper/hubspotAuth/createQuoteById) Function Error :- ', message: error};
     }
 }
-
 
 exports.assosiationLabel = async (obj,objid,ass,token) => {
     try{
