@@ -252,14 +252,14 @@ exports.associationTypeId = async (obj,objId, assObj,assId,token) => {
     return TypeID;
 }
 
-exports.createQuoteById = async (id,user, lineItemRes,title="New Quote") => {
+exports.createQuoteById = async (id,user, lineItemRes,title) => {
     try {
         console.log("Create quote by quote template id start")
         let {results:lineItems} = lineItemRes;
         let quoteAssosiation = [];
         let templateId = user.quoteTemplateId;
         let quoteData = { "properties" :{
-            hs_title: title,
+            hs_title: title || "New Quote",
             hs_expiration_date: "2023-12-12",
             "hs_status":"DRAFT"
         }};

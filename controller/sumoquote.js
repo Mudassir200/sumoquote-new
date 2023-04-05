@@ -223,10 +223,10 @@ exports.responseWebhook = async (req, res) => {
             dealUpdateProperties["sumo_report_pdf"] =  reportUrl;
         }
 
-        // console.log("properties",dealUpdateProperties)
+        console.log("properties",dealUpdateProperties)
 
-        // const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
-        // console.log("sumoquote deal update :- ",response)
+        const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
+        console.log("sumoquote deal update :- ",response)
 
         const lineItems = await this.getTierItemDetails(req.body);
         // console.log(lineItems);
@@ -234,7 +234,14 @@ exports.responseWebhook = async (req, res) => {
         lineItemRes = await createLineItems(ProjectIdDisplay,user.hubspotAccessToken,lineItems)
 
         if(user.createQuote){
-            let ReportTitle = req.body.TitleReportPage.ReportType !== null && req.body.TitleReportPage.ReportType ? req.body.TitleReportPage.ReportType : "New Quote";
+            let ReportTitle = ''
+            if (req.body.TitleReportPage.ReportType !== null && req.body.TitleReportPage.ReportType) {
+                ReportTitle = req.body.TitleReportPage.ReportType;
+            } else {
+                let dealproperties = "?properties=dealname,hs_object_id,companycam_project_id,customer_first_name,customer_last_name,email,outside_sales__os_,phone_number,address_line_1,address_line_2,state,zip_code,city"
+                let dealobjectData = await getHubspotObjectData(ProjectIdDisplay, 'deal', user.hubspotAccessToken, dealproperties);
+                ReportTitle = dealobjectData.properties.dealname;
+            }
             await createQuoteById(ProjectIdDisplay,user,lineItemRes,ReportTitle)
         }
         console.log("sumoquote webhook response end")
