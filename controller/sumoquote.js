@@ -4,7 +4,7 @@ const {User} = require('../model/user');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
-const {getHubspotObjectData,updateDealdata, getHubspotOwner, createLineItems} = require('../helper/hubspotAuth');
+const {getHubspotObjectData,updateDealdata, getHubspotOwner, createLineItems, createQuoteById} = require('../helper/hubspotAuth');
 
 exports.connect = async (req, res) => {
     try {
@@ -204,14 +204,17 @@ exports.responseWebhook = async (req, res) => {
         if (req.body.AuthorizationPage.CustomerNotes && req.body.AuthorizationPage.CustomerNotes !== "") {
             dealUpdateProperties["customer_comments"] =  req.body.AuthorizationPage.CustomerNotes;
         }
-        if (req.body.AuthorizationPage.ProductSelections[0].Selection && req.body.AuthorizationPage.ProductSelections[0].Selection !== "") {
-            dealUpdateProperties["product_selection___current_crm"] =  req.body.AuthorizationPage.ProductSelections[0].Selection;
-        }
-        if (req.body.AuthorizationPage.ProductSelections[1].Selection && req.body.AuthorizationPage.ProductSelections[1].Selection !== "") {
-            dealUpdateProperties["product_selection___current_phone_system"] =  req.body.AuthorizationPage.ProductSelections[1].Selection;
-        }
-        if (req.body.AuthorizationPage.ProductSelections[2].Selection && req.body.AuthorizationPage.ProductSelections[2].Selection !== "") {
-            dealUpdateProperties["product_selection___apple_pc"] =  req.body.AuthorizationPage.ProductSelections[2].Selection;
+
+        if(req.body.AuthorizationPage.ProductSelections.length > 0){
+            if (req.body.AuthorizationPage.ProductSelections[0].Selection && req.body.AuthorizationPage.ProductSelections[0].Selection !== "") {
+                dealUpdateProperties["product_selection___current_crm"] =  req.body.AuthorizationPage.ProductSelections[0].Selection;
+            }
+            if (req.body.AuthorizationPage.ProductSelections[1].Selection && req.body.AuthorizationPage.ProductSelections[1].Selection !== "") {
+                dealUpdateProperties["product_selection___current_phone_system"] =  req.body.AuthorizationPage.ProductSelections[1].Selection;
+            }
+            if (req.body.AuthorizationPage.ProductSelections[2].Selection && req.body.AuthorizationPage.ProductSelections[2].Selection !== "") {
+                dealUpdateProperties["product_selection___apple_pc"] =  req.body.AuthorizationPage.ProductSelections[2].Selection;
+            }
         }
 
         let reportUrl = await this.reportUrl(projectId,req.body.Id,user.sumoquoteAPIKEY)
@@ -220,14 +223,20 @@ exports.responseWebhook = async (req, res) => {
             dealUpdateProperties["sumo_report_pdf"] =  reportUrl;
         }
 
-        console.log("properties",dealUpdateProperties)
+        // console.log("properties",dealUpdateProperties)
 
-        const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
-        console.log("sumoquote deal update :- ",response)
+        // const response = await updateDealdata(ProjectIdDisplay,user.hubspotAccessToken,dealUpdateProperties);
+        // console.log("sumoquote deal update :- ",response)
 
         const lineItems = await this.getTierItemDetails(req.body);
         // console.log(lineItems);
-        let lineItemRes = await createLineItems(ProjectIdDisplay,user.hubspotAccessToken,lineItems)
+        let lineItemRes = {}
+        lineItemRes = await createLineItems(ProjectIdDisplay,user.hubspotAccessToken,lineItems)
+
+        if(user.createQuote){
+            await createQuoteById(ProjectIdDisplay,user,lineItemRes,req.body.TitleReportPage.ReportType)
+        }
+
         console.log("sumoquote webhook response end")
         return res.status(200).json({message: "Webhook Acceptable",lineItemRes});
     } catch (error) {

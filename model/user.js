@@ -42,6 +42,13 @@ const userSchema = new Schema({
     },
     sumoquoteWebhookId: {
         type: String
+    },
+    createQuote: {
+        type: String,
+        default:false
+    },
+    quoteTemplateId: {
+        type: String
     }
 })
 
