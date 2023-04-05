@@ -234,7 +234,8 @@ exports.responseWebhook = async (req, res) => {
         lineItemRes = await createLineItems(ProjectIdDisplay,user.hubspotAccessToken,lineItems)
 
         if(user.createQuote){
-            await createQuoteById(ProjectIdDisplay,user,lineItemRes,req.body.TitleReportPage.ReportType)
+            let ReportTitle = req.body.TitleReportPage.ReportType !== null && req.body.TitleReportPage.ReportType ? req.body.TitleReportPage.ReportType : "New Quote";
+            await createQuoteById(ProjectIdDisplay,user,lineItemRes,ReportTitle)
         }
         console.log("sumoquote webhook response end")
         return res.status(200).json({message: "Webhook Acceptable",lineItemRes});
