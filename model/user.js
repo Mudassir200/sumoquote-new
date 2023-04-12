@@ -44,7 +44,7 @@ const userSchema = new Schema({
         type: String
     },
     createQuote: {
-        type: String,
+        type: Boolean ,
         default:false
     },
     quoteTemplateId: {
