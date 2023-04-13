@@ -10,7 +10,7 @@ router.get('/crmCardReport', requireConnectCrmCard, getHubspotAccessToken,getSum
 router.get('/settings', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, setting);
 router.post('/sync', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, syncDealToProject);
 router.get('/download', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, downloadReport);
-router.get('/create-deal', createProjectOnCreateDeal);
+router.post('/create-deal', createProjectOnCreateDeal);
 
 
 module.exports = router;
