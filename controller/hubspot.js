@@ -379,3 +379,9 @@ exports.downloadReport = async (req, res) => {
         return res.status(400).json({from: '(controller/hubspot/downloadReport) Function Error :- ', message: error.message});
     }
 }
+
+
+exports.createProjectOnCreateDeal = async (req, res) => {
+    console.log({ query: req.query, body: req.body });
+    console.log("body",JSON.stringify(req.body));
+}

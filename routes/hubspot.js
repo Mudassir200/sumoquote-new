@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { getSumoquoteAccessToken } = require( '../helper/sumoquoteAuth');
-const {connect, callback, crmCardReport, setting, syncDealToProject, downloadReport} = require('../controller/hubspot');
+const {connect, callback, crmCardReport, setting, syncDealToProject, downloadReport, createProjectOnCreateDeal} = require('../controller/hubspot');
 const {requireConnectCrmCard, requiredAuth} = require('../common-middleware');
 const {getHubspotAccessToken} = require('../helper/hubspotAuth');
 
@@ -10,6 +10,7 @@ router.get('/crmCardReport', requireConnectCrmCard, getHubspotAccessToken,getSum
 router.get('/settings', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, setting);
 router.post('/sync', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, syncDealToProject);
 router.get('/download', requiredAuth, getHubspotAccessToken,getSumoquoteAccessToken, downloadReport);
+router.get('/create-deal', createProjectOnCreateDeal);
 
 
 module.exports = router;
