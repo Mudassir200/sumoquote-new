@@ -105,3 +105,10 @@ exports.checkPropertyObj = async (obj, property) => {
 exports.getDate = async str => {
   return new Date(str.split("T")[0]).getTime();
 };
+
+
+exports.sleep = async (ms) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

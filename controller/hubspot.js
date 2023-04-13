@@ -1,7 +1,7 @@
 const {User} = require('../model/user');
 const axios = require('axios');
 const Hubspot = require('hubspot');
-const {getExpiry, checkPropertyObj, getDate} = require('../common-middleware');
+const {getExpiry, checkPropertyObj, getDate, sleep} = require('../common-middleware');
 const {getProjectByDealId, getReportsByProjectId,getTierItemDetails} = require('./sumoquote');
 const {getHubspotObjectData} = require('../helper/hubspotAuth');
 const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
@@ -380,8 +380,16 @@ exports.downloadReport = async (req, res) => {
     }
 }
 
+exports.webhookCreateDeal = async (req, res) => {
+    createProjectOnCreateDeal(req);
+    return res.status(200).json({'message':"Webhook accepts"});
+}
 
 exports.createProjectOnCreateDeal = async (req, res) => {
-    console.log({ query: req.query, body: req.body });
+    console.log("Deal create Webhook start");
+    console.log(new Date());
+    sleep(100);
+    console.log(new Date());
     console.log("body",JSON.stringify(req.body));
+    console.log("Deal create Webhook successfully end");
 }
