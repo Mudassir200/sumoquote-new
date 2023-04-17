@@ -3,8 +3,9 @@ const axios = require('axios');
 const Hubspot = require('hubspot');
 const {getExpiry, checkPropertyObj, getDate, sleep} = require('../common-middleware');
 const {getProjectByDealId, getReportsByProjectId,getTierItemDetails} = require('./sumoquote');
-const {getHubspotObjectData} = require('../helper/hubspotAuth');
-const {sumoApiKeyHeader} = require('../helper/sumoquoteAuth');
+const {getHubspotObjectData,refreshHubspotAccessToken} = require('../helper/hubspotAuth');
+const {sumoApiKeyHeader,refreshSumoquoteAccessToken} = require('../helper/sumoquoteAuth');
+const {  } = require('../helper/hubspotAuth');
 const HOST = process.env.HOST;
 
 exports.connect = async (req, res) => {
@@ -381,15 +382,32 @@ exports.downloadReport = async (req, res) => {
 }
 
 exports.webhookCreateDeal = async (req, res) => {
-    createProjectOnCreateDeal(req);
+    //createProjectOnCreateDeal(req);
     return res.status(200).json({'message':"Webhook accepts"});
 }
 
 exports.createProjectOnCreateDeal = async (req, res) => {
-    console.log("Deal create Webhook start");
-    console.log(new Date());
-    sleep(100);
-    console.log(new Date());
-    console.log("body",JSON.stringify(req.body));
-    console.log("Deal create Webhook successfully end");
+    try {
+        console.log("Deal create Webhook start");
+        console.log(new Date());
+        sleep(100);
+        console.log(new Date());
+        console.log("body",JSON.stringify(req.body));
+
+        for (let i = 0; i < req.body.length; i++) {
+            let dealData = req.body[i]
+            if (dealData.subscriptionType !== 'deal.creation') continue;
+            const portalId = dealData.portalId
+            const user = await User.findOne({ hubspotPortalId: portalId });
+            if (!user || !user.hubspotPortalId || !user.hubspotRefreshToken) continue;
+            let hubspotAccessToken = refreshHubspotAccessToken(user);
+            if (!user.sumoquoteRefreshToken && !user.sumoquoteAPIKEY) continue;
+            let SumoAccessToken = refreshSumoquoteAccessToken(user);
+
+            
+        }
+        console.log("Deal create Webhook successfully end");
+    } catch (error) {
+        console.log({from: '(controller/hubspot/createProjectOnCreateDeal) Function Error :- ', message: error.message});
+    }
 }

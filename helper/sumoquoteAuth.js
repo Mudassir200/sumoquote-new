@@ -39,7 +39,6 @@ exports.refreshSumoquoteAccessToken = async (user) => {
         const {data: response} = await axios(config)
         user.sumoquoteAccessToken = response.access_token;
         user.sumoquoteTokenExpiry = await getExpiry(response.expires_in);
-        user.sumoquoteRefreshToken = response.refresh_token;
 
         await user.save();
         console.log("updated sumoquote access token :- ", response)
