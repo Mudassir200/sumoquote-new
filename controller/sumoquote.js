@@ -206,15 +206,18 @@ exports.responseWebhook = async (req, res) => {
         }
 
         if(req.body.AuthorizationPage.ProductSelections.length > 0){
-            if (req.body.AuthorizationPage.ProductSelections[0].Selection && req.body.AuthorizationPage.ProductSelections[0].Selection !== "") {
-                dealUpdateProperties["product_selection___current_crm"] =  req.body.AuthorizationPage.ProductSelections[0].Selection;
-            }
-            if (req.body.AuthorizationPage.ProductSelections[1].Selection && req.body.AuthorizationPage.ProductSelections[1].Selection !== "") {
-                dealUpdateProperties["product_selection___current_phone_system"] =  req.body.AuthorizationPage.ProductSelections[1].Selection;
-            }
-            if (req.body.AuthorizationPage.ProductSelections[2].Selection && req.body.AuthorizationPage.ProductSelections[2].Selection !== "") {
-                dealUpdateProperties["product_selection___apple_pc"] =  req.body.AuthorizationPage.ProductSelections[2].Selection;
-            }
+            if (req.body.AuthorizationPage.ProductSelections.length >= 1 && req.body.AuthorizationPage.ProductSelections[0].Selection && req.body.AuthorizationPage.ProductSelections[0].Selection !== "") {
+                dealUpdateProperties["product_selection___current_crm"] =
+                  req.body.AuthorizationPage.ProductSelections[0].Selection;
+              }
+              if (req.body.AuthorizationPage.ProductSelections.length >= 2 && req.body.AuthorizationPage.ProductSelections[1].Selection && req.body.AuthorizationPage.ProductSelections[1].Selection !== "" ) {
+                dealUpdateProperties["product_selection___current_phone_system"] =
+                  req.body.AuthorizationPage.ProductSelections[1].Selection;
+              }
+              if (req.body.AuthorizationPage.ProductSelections.length >= 3 && req.body.AuthorizationPage.ProductSelections[2].Selection && req.body.AuthorizationPage.ProductSelections[2].Selection !== "") {
+                dealUpdateProperties["product_selection___apple_pc"] =
+                  req.body.AuthorizationPage.ProductSelections[2].Selection;
+              }
         }
 
         let reportUrl = await this.reportUrl(projectId,req.body.Id,user.sumoquoteAPIKEY)
